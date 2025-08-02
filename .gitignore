@@ -1,64 +1,39 @@
-# Created by https://www.toptal.com/developers/gitignore/api/angular,django,react
-# Edit at https://www.toptal.com/developers/gitignore?templates=angular,django,react
+### Go ###
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
-### Angular ###
-## Angular ##
-# compiled output
-dist/
-tmp/
-app/**/*.js
-app/**/*.js.map
+# Test binary, built with `go test -c`
+*.test
 
-# dependencies
-node_modules/
-bower_components/
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
 
-# IDEs and editors
-.idea/
+# Dependency directories (remove the comment below to include it)
+# vendor/
 
-# misc
-.sass-cache/
-connect.lock/
-coverage/
-libpeerconnection.log/
-npm-debug.log
-testem.log
-typings/
-.angular/
+# Go workspace file
+go.work
 
-# e2e
-e2e/*.js
-e2e/*.map
-
-# System Files
-.DS_Store/
-
-### Django ###
-*.log
-*.pot
-*.pyc
-__pycache__/
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-media
-
-# If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
-# in your Git repository. Update and uncomment the following line accordingly.
-# <django-project-name>/staticfiles/
-
-### Django.Python Stack ###
+### Python ###
 # Byte-compiled / optimized / DLL files
+__pycache__/
 *.py[cod]
 *$py.class
 
 # C extensions
-*.so
 
 # Distribution / packaging
 .Python
 build/
 develop-eggs/
+dist/
 downloads/
 eggs/
 .eggs/
@@ -101,8 +76,13 @@ cover/
 
 # Translations
 *.mo
+*.pot
 
 # Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
 # Flask stuff:
 instance/
@@ -166,7 +146,7 @@ celerybeat.pid
 .env
 .venv
 env/
-**/venv/
+venv/
 ENV/
 env.bak/
 venv.bak/
@@ -202,6 +182,16 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+### Python Patch ###
+# Poetry local configuration file - https://python-poetry.org/docs/configuration/#local-configuration
+poetry.toml
+
+# ruff
+.ruff_cache/
+
+# LSP config files
+pyrightconfig.json
+
 ### react ###
 .DS_*
 logs
@@ -216,5 +206,3 @@ bower_components
 psd
 thumb
 sketch
-
-# End of https://www.toptal.com/developers/gitignore/api/angular,django,react

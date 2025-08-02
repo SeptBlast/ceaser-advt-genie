@@ -1,0 +1,40 @@
+# Docker Compose override for development
+# Use this for development with hot reload: docker-compose -f docker-compose.polyglot.yml -f docker-compose.dev.yml up
+
+services:
+  # Frontend with development server and hot reload
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api/v1
+      - VITE_APP_ENV=development
+      - VITE_APP_NAME=Ceaser Ad Business (Dev)
+      - VITE_APP_VERSION=1.0.0-dev
+    volumes:
+      - ./frontend/src:/app/src:ro
+      - ./frontend/public:/app/public:ro
+      - ./frontend/index.html:/app/index.html:ro
+      - ./frontend/vite.config.ts:/app/vite.config.ts:ro
+      - ./frontend/tsconfig.json:/app/tsconfig.json:ro
+    ports:
+      - "3000:3000"
+      - "3001:3001" # HMR port
+    command: npm run dev -- --host 0.0.0.0
+
+  # Go API Gateway with hot reload for development
+  api-gateway:
+    environment:
+      - GIN_MODE=debug
+      - LOG_LEVEL=debug
+    volumes:
+      - ./services/go-api-gateway:/app:ro
+
+  # Python AI Engine with debug mode
+  ai-engine:
+    environment:
+      - LOG_LEVEL=DEBUG
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      - ./services/python-ai-engine:/app:ro

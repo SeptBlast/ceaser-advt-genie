@@ -1,0 +1,140 @@
+services:
+  # Python AI Engine Service
+  ai-engine:
+    build:
+      context: ./services/python-ai-engine
+      dockerfile: Dockerfile
+    container_name: ceaser-ai-engine
+    restart: unless-stopped
+    ports:
+      - "50051:50051"
+    environment:
+      - GRPC_PORT=50051
+      - MONGO_HOST=ceaser-ad-gini.jokuuab.mongodb.net
+      - MONGO_PORT=27017
+      - MONGO_DB_NAME=ceaser-advt-genie
+      - MONGO_USERNAME=developer
+      - MONGO_PASSWORD=A3n3l43wMtVCUn8m
+      - MONGO_AUTH_SOURCE=admin
+      - REDIS_URL=redis://default:CRxqRlrx7wB6srqs1cFfBE6lM3X7ISS4@redis-11552.c301.ap-south-1-1.ec2.redns.redis-cloud.com:11552
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./services/python-ai-engine/.env:/app/.env:ro
+    networks:
+      - ceaser-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import grpc; grpc.insecure_channel('localhost:50051').close()",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Go API Gateway Service
+  api-gateway:
+    build:
+      context: ./services/go-api-gateway
+      dockerfile: Dockerfile
+    container_name: ceaser-api-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - MONGO_HOST=ceaser-ad-gini.jokuuab.mongodb.net
+      - MONGO_PORT=27017
+      - MONGO_DB_NAME=ceaser-advt-genie
+      - MONGO_USERNAME=developer
+      - MONGO_PASSWORD=A3n3l43wMtVCUn8m
+      - MONGO_AUTH_SOURCE=admin
+      - AI_ENGINE_ADDRESS=ai-engine:50051
+      - REDIS_URL=redis://default:CRxqRlrx7wB6srqs1cFfBE6lM3X7ISS4@redis-11552.c301.ap-south-1-1.ec2.redns.redis-cloud.com:11552
+      - GIN_MODE=release
+    volumes:
+      - ./services/go-api-gateway/.env:/root/.env:ro
+    depends_on:
+      - ai-engine
+    networks:
+      - ceaser-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8000/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend (React + Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ceaser-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api/v1
+      - VITE_APP_ENV=production
+      - VITE_APP_NAME=Ceaser Ad Business
+      - VITE_APP_VERSION=1.0.0
+    depends_on:
+      - api-gateway
+    networks:
+      - ceaser-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Qdrant for vector search
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ceaser-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - ceaser-network
+
+  # Optional: Observability with Jaeger
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: ceaser-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - ceaser-network
+
+volumes:
+  qdrant_data:
+    driver: local
+
+networks:
+  ceaser-network:
+    driver: bridge

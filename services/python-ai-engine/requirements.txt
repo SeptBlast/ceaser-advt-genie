@@ -1,0 +1,26 @@
+grpcio==1.74.0
+grpcio-tools==1.74.0
+protobuf==6.31.1
+langchain==0.3.27
+langchain-community==0.3.27
+langchain-openai==0.3.28
+langchain-google-genai==2.1.8
+langchain-experimental==0.3.4
+openai==1.98.0
+# google-generativeai>=0.8.5
+python-dotenv==1.1.1
+pydantic==2.11.7
+motor==3.7.1
+pymongo==4.13.2
+redis==6.2.0
+celery==5.5.3
+structlog==25.4.0
+opentelemetry-api==1.36.0
+opentelemetry-sdk==1.36.0
+opentelemetry-instrumentation-grpc==0.57b0
+qdrant-client==1.15.1
+beautifulsoup4==4.13.4
+requests==2.32.4
+duckduckgo-search==8.1.1
+wikipedia==1.4.0
+httpx==0.28.1
