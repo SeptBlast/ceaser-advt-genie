@@ -24,9 +24,9 @@ urlpatterns = [
     
     # API v1
     path('api/v1/', include('apps.core.urls')),
-    path('api/v1/auth/', include('apps.users.urls')),
-    path('api/v1/tenants/', include('apps.tenants.urls')),
-    # path('api/v1/ad-generation/', include('apps.ad_generation.urls')),
+    # path('api/v1/auth/', include('apps.users.urls')),  # Commented out for MongoDB migration
+    # path('api/v1/tenants/', include('apps.tenants.urls')),  # Commented out for MongoDB migration
+    path('api/v1/ad-generation/', include('apps.ad_generation.urls')),
     # path('api/v1/analytics/', include('apps.analytics.urls')),
     # path('api/v1/billing/', include('apps.billing.urls')),
 ]

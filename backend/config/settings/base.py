@@ -32,13 +32,13 @@ THIRD_PARTY_APPS = [
     'health_check',
     'health_check.db',
     'health_check.cache',
-    'mongoengine',
+    # 'mongoengine',  # Commented out for SQLite development
 ]
 
 LOCAL_APPS = [
     'apps.core',
-    'apps.tenants',
-    'apps.users',
+    # 'apps.tenants',  # Commented out for MongoDB migration (depends on users)
+    # 'apps.users',  # Commented out for MongoDB migration
     'apps.ad_generation',
     'apps.analytics',
     'apps.billing',
@@ -55,7 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.core.middleware.TenantMiddleware',  # Custom tenant middleware
+    # 'apps.core.middleware.TenantMiddleware',  # Commented out for MongoDB migration
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -78,36 +78,47 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-# Using SQLite for Django ORM tables (auth, sessions, etc.)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Database Configuration
+# Hybrid approach: Django ORM for auth/sessions + MongoDB for business data
 
-# MongoDB Configuration using MongoEngine
+# MongoDB Configuration - Pure MongoDB approach
 import mongoengine
 
-# MongoDB connection for MongoEngine
+# Pure MongoDB configuration
 MONGODB_SETTINGS = {
-    'db': config('MONGO_DB_NAME', default='adgenius_public'),
+    'public_db': config('MONGO_PUBLIC_DB', default='adgenius_public'),
     'host': config('MONGO_HOST', default='localhost'),
     'port': int(config('MONGO_PORT', default=27017)),
     'username': config('MONGO_USERNAME', default=''),
     'password': config('MONGO_PASSWORD', default=''),
     'authentication_source': config('MONGO_AUTH_SOURCE', default='admin'),
+    'tenant_db_prefix': 'tenant_',
 }
 
-# Connect to MongoDB
+# Connect to MongoDB using MongoEngine
 def connect_mongodb():
     """Connect to MongoDB using MongoEngine."""
-    mongoengine.connect(**MONGODB_SETTINGS)
+    mongoengine.connect(
+        MONGODB_SETTINGS['public_db'],
+        host=MONGODB_SETTINGS['host'],
+        port=MONGODB_SETTINGS['port'],
+        username=MONGODB_SETTINGS['username'] or None,
+        password=MONGODB_SETTINGS['password'] or None,
+        authentication_source=MONGODB_SETTINGS['authentication_source'] if MONGODB_SETTINGS['username'] else None,
+    )
 
-# Custom User Model
-AUTH_USER_MODEL = 'users.User'
+# Initialize MongoDB connection
+connect_mongodb()
+
+# Dummy database for Django admin (required but not used)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.dummy',
+    }
+}
+
+# Multi-tenant database router (not needed with pure MongoDB)
+# DATABASE_ROUTERS = ['apps.core.db_router.MultiTenantDBRouter']
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -155,7 +166,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',  # Temporarily allow any for testing
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',

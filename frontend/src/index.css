@@ -1,0 +1,112 @@
+/* Material Design 3 CSS Variables */
+:root {
+  /* Primary Colors */
+  --md3-primary-0: #000000;
+  --md3-primary-10: #002952;
+  --md3-primary-20: #004785;
+  --md3-primary-25: #0055a3;
+  --md3-primary-30: #0062c1;
+  --md3-primary-35: #006fde;
+  --md3-primary-40: #405ca8;
+  --md3-primary-50: #5a7bc8;
+  --md3-primary-60: #7998c4;
+  --md3-primary-70: #9bb5e0;
+  --md3-primary-80: #bdd2fc;
+  --md3-primary-90: #dee8ff;
+  --md3-primary-95: #eff4ff;
+  --md3-primary-98: #f8f9ff;
+  --md3-primary-99: #fdfbff;
+  --md3-primary-100: #ffffff;
+
+  /* Secondary Colors */
+  --md3-secondary-0: #000000;
+  --md3-secondary-10: #0b1f20;
+  --md3-secondary-20: #203435;
+  --md3-secondary-25: #2b3f40;
+  --md3-secondary-30: #364a4b;
+  --md3-secondary-35: #425657;
+  --md3-secondary-40: #4e6162;
+  --md3-secondary-50: #667a7b;
+  --md3-secondary-60: #809394;
+  --md3-secondary-70: #9aadae;
+  --md3-secondary-80: #b4c8c9;
+  --md3-secondary-90: #d0e4e5;
+  --md3-secondary-95: #def2f3;
+  --md3-secondary-98: #ebfbfc;
+  --md3-secondary-99: #f4feff;
+  --md3-secondary-100: #ffffff;
+
+  /* Surface Colors */
+  --md3-surface-dim: #d2d9d9;
+  --md3-surface-bright: #f2f9f9;
+  --md3-surface-container-lowest: #ffffff;
+  --md3-surface-container-low: #ecf3f3;
+  --md3-surface-container: #e6eded;
+  --md3-surface-container-high: #e1e7e7;
+  --md3-surface-container-highest: #dbe2e2;
+
+  /* Text Colors */
+  --md3-on-surface: #161d1d;
+  --md3-on-surface-variant: #3f484a;
+}
+
+/* Dark theme colors */
+[data-theme="dark"] {
+  /* Primary Colors (Dark) */
+  --md3-primary-0: #ffffff;
+  --md3-primary-10: #dee8ff;
+  --md3-primary-20: #bdd2fc;
+  --md3-primary-30: #9bb5e0;
+  --md3-primary-40: #7998c4;
+  --md3-primary-50: #5a7bc8;
+  --md3-primary-60: #405ca8;
+  --md3-primary-70: #306fb8;
+  --md3-primary-80: #1a82d2;
+  --md3-primary-90: #0095eb;
+  --md3-primary-95: #00a8ff;
+  --md3-primary-100: #000000;
+
+  /* Surface Colors (Dark) */
+  --md3-surface-dim: #0f1515;
+  --md3-surface-bright: #353c3c;
+  --md3-surface-container-lowest: #0a1111;
+  --md3-surface-container-low: #161d1d;
+  --md3-surface-container: #1a2121;
+  --md3-surface-container-high: #252b2c;
+  --md3-surface-container-highest: #2f3636;
+
+  /* Text Colors (Dark) */
+  --md3-on-surface: #e1e3e3;
+  --md3-on-surface-variant: #bfc8ca;
+}
+
+/* Global styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--md3-surface-container-lowest);
+  color: var(--md3-on-surface);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Remove default button styles */
+button {
+  font-family: inherit;
+}
+
+/* Remove default link styles */
+a {
+  color: inherit;
+  text-decoration: none;
+}
