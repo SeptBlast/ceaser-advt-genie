@@ -97,15 +97,22 @@ MONGODB_SETTINGS = {
 
 # Connect to MongoDB using MongoEngine
 def connect_mongodb():
-    """Connect to MongoDB using MongoEngine."""
-    mongoengine.connect(
-        MONGODB_SETTINGS['public_db'],
-        host=MONGODB_SETTINGS['host'],
-        port=MONGODB_SETTINGS['port'],
-        username=MONGODB_SETTINGS['username'] or None,
-        password=MONGODB_SETTINGS['password'] or None,
-        authentication_source=MONGODB_SETTINGS['authentication_source'] if MONGODB_SETTINGS['username'] else None,
-    )
+    """Connect to MongoDB using MongoEngine with Atlas support."""
+    if MONGODB_SETTINGS['username']:
+        # MongoDB Atlas connection with authentication
+        connection_string = f"mongodb+srv://{MONGODB_SETTINGS['username']}:{MONGODB_SETTINGS['password']}@{MONGODB_SETTINGS['host']}/{MONGODB_SETTINGS['public_db']}?retryWrites=true&w=majority&ssl=true&authSource={MONGODB_SETTINGS['authentication_source']}"
+        mongoengine.connect(
+            MONGODB_SETTINGS['public_db'],
+            host=connection_string,
+            alias='default'
+        )
+    else:
+        # Local MongoDB connection (fallback)
+        mongoengine.connect(
+            MONGODB_SETTINGS['public_db'],
+            host=MONGODB_SETTINGS['host'],
+            port=MONGODB_SETTINGS['port'],
+        )
 
 # Initialize MongoDB connection
 connect_mongodb()
