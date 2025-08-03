@@ -2,113 +2,138 @@ package models
 
 import (
 	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Campaign represents an advertising campaign
 type Campaign struct {
-	ID                 primitive.ObjectID     `bson:"_id,omitempty" json:"id"`
-	Name               string                 `bson:"name" json:"name" binding:"required"`
-	Description        string                 `bson:"description" json:"description"`
-	TenantID           string                 `bson:"tenant_id" json:"tenant_id"`
-	TargetPlatforms    []string               `bson:"target_platforms" json:"target_platforms"`
-	Budget             float64                `bson:"budget" json:"budget"`
-	TargetAudience     map[string]interface{} `bson:"target_audience" json:"target_audience"`
-	CampaignObjectives []string               `bson:"campaign_objectives" json:"campaign_objectives"`
-	BrandGuidelines    map[string]interface{} `bson:"brand_guidelines" json:"brand_guidelines"`
-	BrandAssets        []string               `bson:"brand_assets" json:"brand_assets"`
-	IsActive           bool                   `bson:"is_active" json:"is_active"`
-	CreatedAt          time.Time              `bson:"created_at" json:"created_at"`
-	UpdatedAt          time.Time              `bson:"updated_at" json:"updated_at"`
-	CreatedBy          string                 `bson:"created_by" json:"created_by"`
-	CreativesCount     int                    `bson:"creatives_count" json:"creatives_count"`
-	PerformanceSummary PerformanceSummary     `bson:"performance_summary" json:"performance_summary"`
+	ID                 string                 `firestore:"-" json:"id"` // Document ID is handled separately in Firestore
+	Name               string                 `firestore:"name" json:"name" binding:"required"`
+	Description        string                 `firestore:"description" json:"description"`
+	TenantID           string                 `firestore:"tenant_id" json:"tenant_id"`
+	UserID             string                 `firestore:"user_id" json:"user_id"` // Add user ID for Firebase Auth integration
+	TargetPlatforms    []string               `firestore:"target_platforms" json:"target_platforms"`
+	Budget             float64                `firestore:"budget" json:"budget"`
+	TargetAudience     map[string]interface{} `firestore:"target_audience" json:"target_audience"`
+	CampaignObjectives []string               `firestore:"campaign_objectives" json:"campaign_objectives"`
+	BrandGuidelines    map[string]interface{} `firestore:"brand_guidelines" json:"brand_guidelines"`
+	BrandAssets        []string               `firestore:"brand_assets" json:"brand_assets"`
+	IsActive           bool                   `firestore:"is_active" json:"is_active"`
+	CreatedAt          time.Time              `firestore:"created_at" json:"created_at"`
+	UpdatedAt          time.Time              `firestore:"updated_at" json:"updated_at"`
+	CreatedBy          string                 `firestore:"created_by" json:"created_by"`
+	CreativesCount     int                    `firestore:"creatives_count" json:"creatives_count"`
+	PerformanceSummary PerformanceSummary     `firestore:"performance_summary" json:"performance_summary"`
 }
 
 // Creative represents generated creative content
 type Creative struct {
-	ID                   primitive.ObjectID     `bson:"_id,omitempty" json:"id"`
-	CampaignID           primitive.ObjectID     `bson:"campaign_id" json:"campaign_id" binding:"required"`
-	Name                 string                 `bson:"name" json:"name" binding:"required"`
-	Description          string                 `bson:"description" json:"description"`
-	CreativeType         string                 `bson:"creative_type" json:"creative_type" binding:"required"`
-	Platform             string                 `bson:"platform" json:"platform" binding:"required"`
-	Status               string                 `bson:"status" json:"status"`
-	GenerationParameters map[string]interface{} `bson:"generation_parameters" json:"generation_parameters"`
-	Variations           []CreativeVariation    `bson:"variations" json:"variations"`
-	SelectedVariationID  string                 `bson:"selected_variation_id" json:"selected_variation_id"`
-	PerformanceMetrics   PerformanceMetrics     `bson:"performance_metrics" json:"performance_metrics"`
-	IsActive             bool                   `bson:"is_active" json:"is_active"`
-	CreatedAt            time.Time              `bson:"created_at" json:"created_at"`
-	UpdatedAt            time.Time              `bson:"updated_at" json:"updated_at"`
-	CreatedBy            string                 `bson:"created_by" json:"created_by"`
+	ID                   string                 `firestore:"-" json:"id"`
+	CampaignID           string                 `firestore:"campaign_id" json:"campaign_id" binding:"required"`
+	UserID               string                 `firestore:"user_id" json:"user_id"`
+	Name                 string                 `firestore:"name" json:"name" binding:"required"`
+	Description          string                 `firestore:"description" json:"description"`
+	CreativeType         string                 `firestore:"creative_type" json:"creative_type" binding:"required"`
+	Platform             string                 `firestore:"platform" json:"platform" binding:"required"`
+	Status               string                 `firestore:"status" json:"status"`
+	GenerationParameters map[string]interface{} `firestore:"generation_parameters" json:"generation_parameters"`
+	Variations           []CreativeVariation    `firestore:"variations" json:"variations"`
+	SelectedVariationID  string                 `firestore:"selected_variation_id" json:"selected_variation_id"`
+	PerformanceMetrics   PerformanceMetrics     `firestore:"performance_metrics" json:"performance_metrics"`
+	IsActive             bool                   `firestore:"is_active" json:"is_active"`
+	CreatedAt            time.Time              `firestore:"created_at" json:"created_at"`
+	UpdatedAt            time.Time              `firestore:"updated_at" json:"updated_at"`
+	CreatedBy            string                 `firestore:"created_by" json:"created_by"`
 }
 
 // CreativeVariation represents a variation of creative content
 type CreativeVariation struct {
-	VariationID          string                 `bson:"variation_id" json:"variation_id"`
-	VariationName        string                 `bson:"variation_name" json:"variation_name"`
-	ContentURL           string                 `bson:"content_url" json:"content_url"`
-	ContentType          string                 `bson:"content_type" json:"content_type"`
-	GenerationParameters map[string]interface{} `bson:"generation_parameters" json:"generation_parameters"`
-	PerformanceScore     float64                `bson:"performance_score" json:"performance_score"`
-	IsApproved           bool                   `bson:"is_approved" json:"is_approved"`
-	CreatedAt            time.Time              `bson:"created_at" json:"created_at"`
+	VariationID          string                 `firestore:"variation_id" json:"variation_id"`
+	VariationName        string                 `firestore:"variation_name" json:"variation_name"`
+	ContentURL           string                 `firestore:"content_url" json:"content_url"`
+	ContentType          string                 `firestore:"content_type" json:"content_type"`
+	GenerationParameters map[string]interface{} `firestore:"generation_parameters" json:"generation_parameters"`
+	PerformanceScore     float64                `firestore:"performance_score" json:"performance_score"`
+	IsApproved           bool                   `firestore:"is_approved" json:"is_approved"`
+	CreatedAt            time.Time              `firestore:"created_at" json:"created_at"`
 }
 
 // CreativeTemplate represents a template for generating content
 type CreativeTemplate struct {
-	ID           primitive.ObjectID     `bson:"_id,omitempty" json:"id"`
-	Name         string                 `bson:"name" json:"name" binding:"required"`
-	Description  string                 `bson:"description" json:"description"`
-	TenantID     string                 `bson:"tenant_id" json:"tenant_id"`
-	TemplateType string                 `bson:"template_type" json:"template_type"`
-	Platform     string                 `bson:"platform" json:"platform"`
-	Prompts      map[string]interface{} `bson:"prompts" json:"prompts"`
-	Parameters   map[string]interface{} `bson:"parameters" json:"parameters"`
-	IsActive     bool                   `bson:"is_active" json:"is_active"`
-	CreatedAt    time.Time              `bson:"created_at" json:"created_at"`
-	UpdatedAt    time.Time              `bson:"updated_at" json:"updated_at"`
-	CreatedBy    string                 `bson:"created_by" json:"created_by"`
+	ID           string                 `firestore:"-" json:"id"`
+	Name         string                 `firestore:"name" json:"name" binding:"required"`
+	Description  string                 `firestore:"description" json:"description"`
+	TenantID     string                 `firestore:"tenant_id" json:"tenant_id"`
+	UserID       string                 `firestore:"user_id" json:"user_id"`
+	TemplateType string                 `firestore:"template_type" json:"template_type"`
+	Platform     string                 `firestore:"platform" json:"platform"`
+	Prompts      map[string]interface{} `firestore:"prompts" json:"prompts"`
+	Parameters   map[string]interface{} `firestore:"parameters" json:"parameters"`
+	IsActive     bool                   `firestore:"is_active" json:"is_active"`
+	CreatedAt    time.Time              `firestore:"created_at" json:"created_at"`
+	UpdatedAt    time.Time              `firestore:"updated_at" json:"updated_at"`
+	CreatedBy    string                 `firestore:"created_by" json:"created_by"`
 }
 
 // GenerationJob represents an AI generation job
 type GenerationJob struct {
-	ID             primitive.ObjectID     `bson:"_id,omitempty" json:"id"`
-	CampaignID     primitive.ObjectID     `bson:"campaign_id" json:"campaign_id"`
-	CreativeID     primitive.ObjectID     `bson:"creative_id" json:"creative_id"`
-	JobType        string                 `bson:"job_type" json:"job_type"`
-	Status         string                 `bson:"status" json:"status"`
-	Parameters     map[string]interface{} `bson:"parameters" json:"parameters"`
-	Results        map[string]interface{} `bson:"results" json:"results"`
-	ErrorMessage   string                 `bson:"error_message" json:"error_message"`
-	StartedAt      time.Time              `bson:"started_at" json:"started_at"`
-	CompletedAt    *time.Time             `bson:"completed_at" json:"completed_at"`
-	ProcessingTime float64                `bson:"processing_time" json:"processing_time"`
-	ModelUsed      string                 `bson:"model_used" json:"model_used"`
-	CreatedAt      time.Time              `bson:"created_at" json:"created_at"`
-	UpdatedAt      time.Time              `bson:"updated_at" json:"updated_at"`
+	ID             string                 `firestore:"-" json:"id"`
+	CampaignID     string                 `firestore:"campaign_id" json:"campaign_id"`
+	CreativeID     string                 `firestore:"creative_id" json:"creative_id"`
+	UserID         string                 `firestore:"user_id" json:"user_id"`
+	JobType        string                 `firestore:"job_type" json:"job_type"`
+	Status         string                 `firestore:"status" json:"status"`
+	Parameters     map[string]interface{} `firestore:"parameters" json:"parameters"`
+	Results        map[string]interface{} `firestore:"results" json:"results"`
+	ErrorMessage   string                 `firestore:"error_message" json:"error_message"`
+	StartedAt      time.Time              `firestore:"started_at" json:"started_at"`
+	CompletedAt    *time.Time             `firestore:"completed_at" json:"completed_at"`
+	ProcessingTime float64                `firestore:"processing_time" json:"processing_time"`
+	ModelUsed      string                 `firestore:"model_used" json:"model_used"`
+	CreatedAt      time.Time              `firestore:"created_at" json:"created_at"`
+	UpdatedAt      time.Time              `firestore:"updated_at" json:"updated_at"`
+}
+
+// UserProfile represents a user profile stored in Firestore (synced with Firebase Auth)
+type UserProfile struct {
+	UID           string    `firestore:"-" json:"uid"` // Document ID
+	Email         string    `firestore:"email" json:"email"`
+	DisplayName   string    `firestore:"display_name" json:"display_name"`
+	PhotoURL      string    `firestore:"photo_url" json:"photo_url,omitempty"`
+	EmailVerified bool      `firestore:"email_verified" json:"email_verified"`
+	CreatedAt     time.Time `firestore:"created_at" json:"created_at"`
+	LastLoginAt   time.Time `firestore:"last_login_at" json:"last_login_at"`
+	// AI Model Configurations
+	AIModels map[string]interface{} `firestore:"ai_models" json:"ai_models"`
+	// Image/Video Generation Models
+	MediaModels map[string]interface{} `firestore:"media_models" json:"media_models"`
+	// Security Settings
+	Security map[string]interface{} `firestore:"security" json:"security"`
+	// Preferences
+	Preferences map[string]interface{} `firestore:"preferences" json:"preferences"`
+	// Tenant/Organization Information
+	TenantID    string   `firestore:"tenant_id" json:"tenant_id"`
+	TenantRole  string   `firestore:"tenant_role" json:"tenant_role"`
+	Permissions []string `firestore:"permissions" json:"permissions"`
 }
 
 // Performance metrics structures
 type PerformanceSummary struct {
-	TotalImpressions int     `bson:"total_impressions" json:"total_impressions"`
-	TotalClicks      int     `bson:"total_clicks" json:"total_clicks"`
-	AverageCTR       float64 `bson:"average_ctr" json:"average_ctr"`
-	TotalConversions int     `bson:"total_conversions" json:"total_conversions"`
-	TotalSpend       float64 `bson:"total_spend" json:"total_spend"`
+	TotalImpressions int     `firestore:"total_impressions" json:"total_impressions"`
+	TotalClicks      int     `firestore:"total_clicks" json:"total_clicks"`
+	AverageCTR       float64 `firestore:"average_ctr" json:"average_ctr"`
+	TotalConversions int     `firestore:"total_conversions" json:"total_conversions"`
+	TotalSpend       float64 `firestore:"total_spend" json:"total_spend"`
 }
 
 type PerformanceMetrics struct {
-	Impressions   int                    `bson:"impressions" json:"impressions"`
-	Clicks        int                    `bson:"clicks" json:"clicks"`
-	CTR           float64                `bson:"ctr" json:"ctr"`
-	Conversions   int                    `bson:"conversions" json:"conversions"`
-	CostPerClick  float64                `bson:"cost_per_click" json:"cost_per_click"`
-	ROAS          float64                `bson:"roas" json:"roas"`
-	Spend         float64                `bson:"spend" json:"spend"`
-	CustomMetrics map[string]interface{} `bson:"custom_metrics" json:"custom_metrics"`
+	Impressions   int                    `firestore:"impressions" json:"impressions"`
+	Clicks        int                    `firestore:"clicks" json:"clicks"`
+	CTR           float64                `firestore:"ctr" json:"ctr"`
+	Conversions   int                    `firestore:"conversions" json:"conversions"`
+	CostPerClick  float64                `firestore:"cost_per_click" json:"cost_per_click"`
+	ROAS          float64                `firestore:"roas" json:"roas"`
+	Spend         float64                `firestore:"spend" json:"spend"`
+	CustomMetrics map[string]interface{} `firestore:"custom_metrics" json:"custom_metrics"`
 }
 
 // API request/response models

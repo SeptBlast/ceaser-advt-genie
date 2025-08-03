@@ -28,12 +28,12 @@ func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetLevel(logrus.InfoLevel)
 
-	// Initialize MongoDB connection
-	mongoClient, err := database.NewMongoClient()
+	// Initialize Firestore connection
+	firestoreClient, err := database.NewFirestoreClient()
 	if err != nil {
-		logrus.Fatal("Failed to connect to MongoDB: ", err)
+		logrus.Fatal("Failed to connect to Firestore: ", err)
 	}
-	defer mongoClient.Disconnect(context.Background())
+	defer firestoreClient.Close()
 
 	// TODO: Initialize Redis when services are ready
 	// redisConfig := services.CacheConfig{
@@ -95,10 +95,10 @@ func main() {
 		})
 	})
 
-	// Initialize handlers
-	campaignHandler := handlers.NewCampaignHandler(mongoClient, aiEngineClient)
-	creativeHandler := handlers.NewCreativeHandler(mongoClient, aiEngineClient)
-	analyticsHandler := handlers.NewAnalyticsHandler(mongoClient, aiEngineClient)
+	// Initialize handlers with Firestore
+	campaignHandler := handlers.NewFirestoreCampaignHandler(firestoreClient, aiEngineClient)
+	creativeHandler := handlers.NewFirestoreCreativeHandler(firestoreClient)
+	analyticsHandler := handlers.NewFirestoreAnalyticsHandler(firestoreClient)
 
 	// API routes
 	api := router.Group("/api/v1")
@@ -116,27 +116,23 @@ func main() {
 		// Creative routes
 		creatives := api.Group("/creatives")
 		{
-			creatives.GET("/", creativeHandler.ListCreatives)
+			creatives.GET("/", creativeHandler.GetCreatives)
 			creatives.POST("/", creativeHandler.CreateCreative)
 			creatives.GET("/:id", creativeHandler.GetCreative)
 			creatives.PUT("/:id", creativeHandler.UpdateCreative)
 			creatives.DELETE("/:id", creativeHandler.DeleteCreative)
 			creatives.POST("/:id/generate", creativeHandler.GenerateCreative)
+			creatives.GET("/:id/performance", creativeHandler.GetCreativePerformance)
 		}
 
 		// Analytics routes
 		analytics := api.Group("/analytics")
 		{
-			analytics.GET("/campaigns/:id", analyticsHandler.GetCampaignAnalytics)
-			analytics.POST("/insights", analyticsHandler.GenerateInsights)
-			analytics.GET("/performance", analyticsHandler.GetPerformanceMetrics)
-		}
-
-		// Agent workflow routes
-		agent := api.Group("/agent")
-		{
-			agent.POST("/workflow", handlers.ExecuteAgentWorkflow(aiEngineClient))
-			agent.POST("/analyze", handlers.AnalyzeCampaignWithAgent(aiEngineClient))
+			analytics.POST("/events", analyticsHandler.RecordEvent)
+			analytics.GET("/campaigns/:campaign_id", analyticsHandler.GetCampaignAnalytics)
+			analytics.GET("/creatives/:creative_id", analyticsHandler.GetCreativeAnalytics)
+			analytics.GET("/dashboard", analyticsHandler.GetDashboardAnalytics)
+			analytics.GET("/reports", analyticsHandler.GetAnalyticsReport)
 		}
 	}
 
