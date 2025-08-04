@@ -16,7 +16,6 @@ import {
 import {
   Email,
   ArrowBack,
-  Lightbulb,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -82,7 +81,15 @@ const ForgotPasswordPage: React.FC = () => {
                 mb: 2,
               }}
             >
-              <Lightbulb sx={{ color: 'white', fontSize: 32 }} />
+              <img 
+                src="/assets/logo.svg" 
+                alt="AdGenius Logo" 
+                style={{ 
+                  width: 48, 
+                  height: 48,
+                  filter: 'brightness(0) invert(1)' // Make logo white
+                }} 
+              />
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
               Reset Password

@@ -392,7 +392,7 @@ class AnalysisService:
             },
             "creatives": {
                 "video_001": {"ctr": 3.2, "impressions": 45000},
-                "image_002": {"ctr": 2.1, "impressions": 38000}
+                "image_002": {"ctr": 2.1, "impressions": 38080}
             }
         }
 

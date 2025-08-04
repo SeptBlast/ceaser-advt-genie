@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Grid,
@@ -15,14 +15,14 @@ import {
   alpha,
   Avatar,
   Stack,
-  LinearProgress,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -32,47 +32,37 @@ import {
   MonetizationOn,
   Assessment,
   Campaign,
-  Psychology,
-  DateRange,
   Download,
   Refresh,
   FilterList,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { useAppStore } from '../store/appStore';
+import { useAnalytics } from '../hooks/useApi';
 import dayjs from 'dayjs';
 
 const AnalyticsPage: React.FC = () => {
   const theme = useTheme();
   const { 
-    campaigns, 
-    analytics, 
-    performanceSummary,
     loading, 
-    fetchAnalytics,
-    fetchPerformanceSummary,
-    fetchCampaigns 
-  } = useAppStore();
+    error, 
+    fetchCampaignAnalytics,
+    fetchSummaryAnalytics,
+    clearError 
+  } = useAnalytics();
 
-  const [selectedCampaign, setSelectedCampaign] = React.useState<string>('all');
-  const [dateRange, setDateRange] = React.useState({
+  const [selectedCampaign, setSelectedCampaign] = useState<string>('all');
+  const [campaignDateRange, setCampaignDateRange] = useState({
     start: dayjs().subtract(30, 'days'),
     end: dayjs(),
   });
 
-  React.useEffect(() => {
-    fetchCampaigns();
-    fetchPerformanceSummary();
-  }, [fetchCampaigns, fetchPerformanceSummary]);
-
-  React.useEffect(() => {
+  const handleRefreshAnalytics = () => {
     if (selectedCampaign && selectedCampaign !== 'all') {
-      fetchAnalytics(selectedCampaign, {
-        start: dateRange.start.format('YYYY-MM-DD'),
-        end: dateRange.end.format('YYYY-MM-DD'),
-      });
+      fetchCampaignAnalytics(selectedCampaign);
+    } else {
+      fetchSummaryAnalytics();
     }
-  }, [selectedCampaign, dateRange, fetchAnalytics]);
+  };
 
   // Mock data for demonstration
   const mockOverviewStats = [
@@ -194,7 +184,7 @@ const AnalyticsPage: React.FC = () => {
       name: 'Product Hero Image',
       type: 'image',
       campaign: 'Product Launch',
-      impressions: 280000,
+      impressions: 280800,
       clicks: 14200,
       ctr: 5.1,
       conversions: 1120,
@@ -245,6 +235,28 @@ const AnalyticsPage: React.FC = () => {
 
   return (
     <Box>
+      {/* Error Alert */}
+      {error && (
+        <Alert 
+          severity="error" 
+          sx={{ mb: 3 }}
+          action={
+            <Button color="inherit" size="small" onClick={clearError}>
+              Dismiss
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
+      )}
+
+      {/* Loading Indicator */}
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
       {/* Header */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <Box>
@@ -257,6 +269,14 @@ const AnalyticsPage: React.FC = () => {
         </Box>
         
         <Stack direction="row" spacing={2}>
+          <Button
+            variant="outlined"
+            startIcon={<Refresh />}
+            onClick={handleRefreshAnalytics}
+            disabled={loading}
+          >
+            Refresh Data
+          </Button>
           <Button variant="outlined" startIcon={<Download />}>
             Export Report
           </Button>
@@ -290,16 +310,16 @@ const AnalyticsPage: React.FC = () => {
             <Grid item xs={12} sm={6} md={3}>
               <DatePicker
                 label="Start Date"
-                value={dateRange.start}
-                onChange={(value) => setDateRange(prev => ({ ...prev, start: value || dayjs() }))}
+                value={campaignDateRange.start}
+                onChange={(value) => setCampaignDateRange(prev => ({ ...prev, start: value || dayjs() }))}
                 slotProps={{ textField: { fullWidth: true } }}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <DatePicker
                 label="End Date"
-                value={dateRange.end}
-                onChange={(value) => setDateRange(prev => ({ ...prev, end: value || dayjs() }))}
+                value={campaignDateRange.end}
+                onChange={(value) => setCampaignDateRange(prev => ({ ...prev, end: value || dayjs() }))}
                 slotProps={{ textField: { fullWidth: true } }}
               />
             </Grid>
@@ -451,7 +471,7 @@ const AnalyticsPage: React.FC = () => {
               </Typography>
               
               <Stack spacing={2}>
-                {mockTopCreatives.map((creative, index) => (
+                {mockTopCreatives.map((creative) => (
                   <Box
                     key={creative.id}
                     sx={{

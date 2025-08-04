@@ -45,12 +45,6 @@ func NewFirebaseApp(projectID string) (*firebase.App, error) {
 		}
 		logrus.Infof("Firebase app initialized with service account for project: %s", projectID)
 	} else {
-		// Development: check for emulator
-		emulatorHost := os.Getenv("FIRESTORE_EMULATOR_HOST")
-		if emulatorHost != "" {
-			logrus.Infof("Using Firestore emulator at: %s", emulatorHost)
-		}
-
 		// Initialize with default credentials (Application Default Credentials)
 		config := &firebase.Config{ProjectID: projectID}
 		app, err = firebase.NewApp(ctx, config)
@@ -72,14 +66,37 @@ func NewFirestoreClient() (*FirestoreClient, error) {
 		return nil, fmt.Errorf("FIREBASE_PROJECT_ID environment variable is required")
 	}
 
+	// Get Firebase database ID (optional, defaults to "(default)")
+	databaseID := os.Getenv("FIREBASE_DATABASE_ID")
+	if databaseID == "" {
+		databaseID = "(default)"
+		logrus.Info("Using default Firestore database")
+	} else {
+		logrus.Infof("Using Firestore database: %s", databaseID)
+	}
+
 	// Initialize Firebase app
 	app, err := NewFirebaseApp(projectID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get Firestore client
-	client, err := app.Firestore(ctx)
+	// Get Firestore client with specific database
+	var client *firestore.Client
+	if databaseID != "(default)" {
+		// For named databases, we need to use the direct Firestore client
+		ctx := context.Background()
+		serviceAccountPath := os.Getenv("FIREBASE_SERVICE_ACCOUNT_PATH")
+		if serviceAccountPath != "" {
+			opt := option.WithCredentialsFile(serviceAccountPath)
+			client, err = firestore.NewClientWithDatabase(ctx, projectID, databaseID, opt)
+		} else {
+			client, err = firestore.NewClientWithDatabase(ctx, projectID, databaseID)
+		}
+	} else {
+		// For default database, use the Firebase app
+		client, err = app.Firestore(ctx)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Firestore client: %w", err)
 	}
@@ -94,7 +111,7 @@ func NewFirestoreClient() (*FirestoreClient, error) {
 		UserProfiles:   client.Collection("user_profiles"),
 	}
 
-	logrus.Info("Successfully connected to Firestore")
+	logrus.Infof("Successfully connected to Firestore database: %s", databaseID)
 
 	return &FirestoreClient{
 		Client:     client,

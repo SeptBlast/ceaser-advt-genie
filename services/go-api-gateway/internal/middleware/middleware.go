@@ -66,6 +66,8 @@ func CORS() gin.HandlerFunc {
 		allowedOrigins := []string{
 			"http://localhost:3000",
 			"http://localhost:3001",
+			"http://localhost:3002",
+			"http://localhost:4173",
 			"https://app.adgenius.com",
 		}
 
@@ -77,14 +79,20 @@ func CORS() gin.HandlerFunc {
 			}
 		}
 
-		if isAllowed || origin == "" {
-			if origin != "" {
-				c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-			}
-			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, X-Tenant-ID, Authorization, accept, origin, Cache-Control, X-Requested-With")
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
+		// Always set CORS headers for proper handling
+		if isAllowed {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		} else if origin == "" {
+			// For requests without origin (like direct API calls), allow all
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		} else {
+			// For disallowed origins, still set headers but deny the origin
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "null")
 		}
+
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, X-Tenant-ID, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)

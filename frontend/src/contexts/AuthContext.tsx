@@ -16,13 +16,14 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
+import { cleanFirestoreData } from '../utils/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
-  photoURL?: string;
+  photoURL?: string | null; // Allow null for Firestore compatibility
   emailVerified: boolean;
   createdAt: Date;
   lastLoginAt: Date;
@@ -138,23 +139,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Load user profile when user changes
   useEffect(() => {
-    const loadUserProfile = async () => {
+    const loadUserProfile = async (retryCount = 0) => {
       if (user) {
         setProfileLoading(true);
+        setError(null); // Clear any previous errors
+        
         try {
+          // Wait for user to be fully authenticated
+          if (!user.emailVerified) {
+            console.log('User email not verified, waiting...');
+            setProfileLoading(false);
+            return;
+          }
+
           const userDocRef = doc(db, 'users', user.uid);
           const userDoc = await getDoc(userDocRef);
           
           if (userDoc.exists()) {
             const profileData = userDoc.data() as UserProfile;
             setUserProfile(profileData);
+            console.log('User profile loaded successfully');
           } else {
             // Create initial profile
+            console.log('Creating initial user profile...');
             const initialProfile: UserProfile = {
               uid: user.uid,
               email: user.email || '',
               displayName: user.displayName || '',
-              photoURL: user.photoURL || undefined,
+              photoURL: user.photoURL || null, // Use null instead of undefined for Firestore compatibility
               emailVerified: user.emailVerified,
               createdAt: new Date(),
               lastLoginAt: new Date(),
@@ -177,22 +189,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               },
             };
             
-            await setDoc(userDocRef, {
+            await setDoc(userDocRef, cleanFirestoreData({
               ...initialProfile,
               createdAt: serverTimestamp(),
               lastLoginAt: serverTimestamp(),
-            });
+            }));
             
             setUserProfile(initialProfile);
+            console.log('Initial user profile created successfully');
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error('Error loading user profile:', err);
-          setError('Failed to load user profile');
+          
+          // Handle specific Firebase errors with more detailed logging
+          if (err.code === 'unavailable' || err.message?.includes('offline') || err.message?.includes('client is offline')) {
+            console.warn('Firestore unavailable or offline detected');
+            if (retryCount < 3) {
+              console.log(`Retrying profile load (attempt ${retryCount + 1})...`);
+              setTimeout(() => loadUserProfile(retryCount + 1), 2000 * (retryCount + 1));
+              return;
+            } else {
+              setError('Unable to connect to the database. Please check your internet connection.');
+            }
+          } else if (err.code === 'permission-denied') {
+            console.error('Permission denied accessing user profile');
+            setError('You do not have permission to access your profile. Please contact support.');
+          } else if (err.code === 'not-found') {
+            console.warn('User document not found, this is expected for new users');
+            // This is normal for new users, don't show an error
+          } else if (err.code === 'cancelled') {
+            console.warn('Request cancelled, likely due to network issues');
+            if (retryCount < 2) {
+              setTimeout(() => loadUserProfile(retryCount + 1), 1000);
+              return;
+            }
+          } else {
+            console.error('Unexpected error:', err.code, err.message);
+            setError('Failed to load user profile. Please try refreshing the page.');
+          }
         } finally {
-          setProfileLoading(false);
+          if (retryCount === 0) { // Only set loading to false on the initial attempt
+            setProfileLoading(false);
+          }
         }
       } else {
         setUserProfile(null);
+        setProfileLoading(false);
       }
     };
 
@@ -207,9 +249,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Update last login
       if (result.user) {
         const userDocRef = doc(db, 'users', result.user.uid);
-        await updateDoc(userDocRef, {
+        await updateDoc(userDocRef, cleanFirestoreData({
           lastLoginAt: serverTimestamp(),
-        });
+        }));
       }
     } catch (err: any) {
       setError(err.message);
@@ -284,9 +326,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Update profile
       if (userProfile) {
         const userDocRef = doc(db, 'users', user.uid);
-        await updateDoc(userDocRef, {
+        await updateDoc(userDocRef, cleanFirestoreData({
           'security.lastPasswordChange': serverTimestamp(),
-        });
+        }));
       }
     } catch (err: any) {
       setError(err.message);
@@ -313,10 +355,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Update profile
       if (userProfile) {
         const userDocRef = doc(db, 'users', user.uid);
-        await updateDoc(userDocRef, {
+        await updateDoc(userDocRef, cleanFirestoreData({
           email: newEmail,
           emailVerified: false,
-        });
+        }));
       }
     } catch (err: any) {
       setError(err.message);
@@ -330,7 +372,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setError(null);
       const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, data);
+      // Clean undefined values before sending to Firestore
+      const cleanedData = cleanFirestoreData(data);
+      await updateDoc(userDocRef, cleanedData);
       
       // Refresh profile
       await refreshUserProfile();

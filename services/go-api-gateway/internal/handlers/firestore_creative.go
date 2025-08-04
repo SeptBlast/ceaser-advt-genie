@@ -418,11 +418,11 @@ func (h *FirestoreCreativeHandler) GenerateCreative(c *gin.Context) {
 	// TODO: Call AI service to generate creative content
 	// For now, return a placeholder response
 	creative := models.Creative{
-		UserID:     userID.(string),
-		CampaignID: req.CampaignID,
-		Name:       "Generated " + strings.Title(req.CreativeType) + " Creative",
-		Type:       req.CreativeType,
-		Content: map[string]interface{}{
+		UserID:       userID.(string),
+		CampaignID:   req.CampaignID,
+		Name:         "Generated " + strings.Title(req.CreativeType) + " Creative",
+		CreativeType: req.CreativeType,
+		GenerationParameters: map[string]interface{}{
 			"prompt":    req.Prompt,
 			"generated": true,
 			"status":    "pending_generation",

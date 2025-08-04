@@ -1,0 +1,157 @@
+services:
+  # Qdrant Vector Database (Production)
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: adgenius_qdrant_prod
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - adgenius_network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "1.0"
+
+  # Python AI Engine Service (Production)
+  python-ai-engine:
+    build:
+      context: ./services/python-ai-engine
+      dockerfile: Dockerfile
+    container_name: adgenius_python_ai_engine_prod
+    restart: unless-stopped
+    environment:
+      # gRPC Server Configuration
+      GRPC_PORT: 50051
+      GRPC_MAX_WORKERS: 20
+
+      # Firebase Configuration (Production)
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      GOOGLE_APPLICATION_CREDENTIALS: /app/firebase/service-account.json
+
+      # LLM API Keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+
+      # Remote Redis Configuration (no local Redis service needed)
+      REDIS_URL: ${REDIS_URL}
+
+      # Qdrant Configuration
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+
+      # Production Settings
+      LOG_LEVEL: INFO
+      LOG_FORMAT: json
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./firebase/service-account.json:/app/firebase/service-account.json:ro
+    depends_on:
+      - qdrant
+    networks:
+      - adgenius_network
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+          cpus: "2.0"
+      replicas: 2
+
+  # Go API Gateway Service (Production)
+  go-api-gateway:
+    build:
+      context: ./services/go-api-gateway
+      dockerfile: Dockerfile
+    container_name: adgenius_go_api_gateway_prod
+    restart: unless-stopped
+    environment:
+      # Application Configuration
+      GIN_MODE: release
+      PORT: 8080
+      LOG_LEVEL: info
+
+      # Firebase Configuration (Production)
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      GOOGLE_APPLICATION_CREDENTIALS: /app/firebase/service-account.json
+
+      # Remote Redis Configuration (no local Redis service needed)
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_TLS: ${REDIS_TLS:-true}
+
+      # AI Engine gRPC Configuration
+      AI_ENGINE_ADDRESS: python-ai-engine:50051
+      AI_ENGINE_TIMEOUT: 30s
+
+      # Firestore Configuration (no MongoDB needed)
+      FIRESTORE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./firebase/service-account.json:/app/firebase/service-account.json:ro
+    depends_on:
+      - python-ai-engine
+    networks:
+      - adgenius_network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
+      replicas: 2
+
+  # React + Vite Frontend (Production Build)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: adgenius_frontend_prod
+    restart: unless-stopped
+    environment:
+      # API Configuration
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+      VITE_GO_API_BASE_URL: ${VITE_GO_API_BASE_URL:-http://localhost:8080}
+      VITE_DEFAULT_TENANT_ID: ${VITE_DEFAULT_TENANT_ID:-acme-corp}
+
+      # App Configuration
+      VITE_APP_TITLE: "AdGenius"
+      VITE_APP_DESCRIPTION: "AI-Powered Multi-Tenant Advertising Platform"
+      VITE_APP_ENV: "production"
+
+      # Firebase Configuration (Production)
+      VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY}
+      VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN}
+      VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID}
+      VITE_FIREBASE_STORAGE_BUCKET: ${VITE_FIREBASE_STORAGE_BUCKET}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${VITE_FIREBASE_MESSAGING_SENDER_ID}
+      VITE_FIREBASE_APP_ID: ${VITE_FIREBASE_APP_ID}
+      VITE_FIREBASE_MEASUREMENT_ID: ${VITE_FIREBASE_MEASUREMENT_ID}
+      VITE_USE_FIREBASE_EMULATOR: "false"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - go-api-gateway
+    networks:
+      - adgenius_network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+
+# Named volumes for data persistence
+volumes:
+  qdrant_data:
+    driver: local
+
+# Custom network
+networks:
+  adgenius_network:
+    driver: bridge
+    name: adgenius_prod_network

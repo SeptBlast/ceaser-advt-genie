@@ -21,17 +21,16 @@
 # Terminal 1: Start Go API Gateway
 cd services/go-api-gateway
 cp .env.example .env
+# Update FIREBASE_SERVICE_ACCOUNT_PATH=../../firebase/service-account.json in .env
 go run cmd/main.go
 
 # Terminal 2: Start Python AI Engine (if available)
 cd services/python-ai-engine
 python -m grpc_server
 
-# Terminal 3: Start MongoDB (if local)
-mongod
-
-# Terminal 4: Start Redis (if local)
-redis-server
+# Terminal 3: Frontend (if testing full stack)
+cd frontend
+npm run dev
 ```
 
 ### Step 3: Test Basic Connectivity

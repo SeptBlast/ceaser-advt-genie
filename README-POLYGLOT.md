@@ -17,7 +17,7 @@ This project implements a **polyglot microservices architecture** that leverages
 │                 │    │                  │    │                 │
 │   Frontend      │    │   Go API         │    │   Python AI     │
 │   (React)       │◄──►│   Gateway        │◄──►│   Engine        │
-│   Port: 3000    │    │   Port: 8000     │    │   Port: 50051   │
+│   Port: 3000    │    │   Port: 8080     │    │   Port: 50051   │
 │                 │    │                  │    │   (gRPC)        │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                               │                          │
@@ -150,7 +150,7 @@ make health
 make logs
 
 # Test API endpoint
-curl http://localhost:8000/health
+curl http://localhost:8080/health
 
 # Verify cloud connections
 ./status-check.sh
@@ -221,7 +221,7 @@ make proto
 
 ## 🌐 API Endpoints
 
-### Go API Gateway (Port 8000)
+### Go API Gateway (Port 8080)
 
 #### Campaign Management
 
@@ -313,7 +313,7 @@ All services include health check endpoints:
 
 ```bash
 # API Gateway health
-curl http://localhost:8000/health
+curl http://localhost:8080/health
 
 # Check all services
 make health

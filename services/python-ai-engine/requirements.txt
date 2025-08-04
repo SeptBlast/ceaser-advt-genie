@@ -12,7 +12,7 @@ python-dotenv==1.1.1
 pydantic==2.11.7
 # Firebase Firestore dependencies (replacing MongoDB)
 firebase-admin==6.6.0
-google-cloud-firestore==2.24.0
+google-cloud-firestore==2.21.0
 # motor==3.7.1  # MongoDB async driver - DEPRECATED
 # pymongo==4.13.2  # MongoDB driver - DEPRECATED
 redis==6.2.0

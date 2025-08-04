@@ -42,6 +42,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
 import { useThemeMode } from '../ThemeProvider';
 import { useAuth } from '../contexts/AuthContext';
+import { useHealth } from '../hooks/useApi';
 
 const drawerWidth = 280;
 
@@ -55,13 +56,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const { mode, toggleTheme } = useThemeMode();
   const { user, logout } = useAuth();
+  const { healthStatus, checkHealth } = useHealth();
   
   const {
     sidebarOpen,
     toggleSidebar,
     tenantContext,
-    healthStatus,
-    checkHealth,
   } = useAppStore();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -104,14 +104,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const getHealthStatusColor = () => {
-    if (!healthStatus) return 'default';
+    if (!healthStatus || !healthStatus.services) return 'default';
     
     const services = healthStatus.services;
-    const allServicesHealthy = Object.keys(services).every(
-      (key) => services[key as keyof typeof services].status === 'healthy'
-    );
     
-    return allServicesHealthy ? 'success' : 'error';
+    // Additional safety check to ensure services is an object
+    if (typeof services !== 'object' || services === null) return 'default';
+    
+    try {
+      const allServicesHealthy = Object.keys(services).every(
+        (key) => services[key as keyof typeof services].status === 'healthy'
+      );
+      
+      return allServicesHealthy ? 'success' : 'error';
+    } catch (error) {
+      console.warn('Error checking health status:', error);
+      return 'default';
+    }
   };
 
   const drawer = (
@@ -119,7 +128,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Logo and Tenant Info */}
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Psychology color="primary" sx={{ mr: 1, fontSize: 32 }} />
+          <img 
+            src="/assets/logo.svg" 
+            alt="AdGenius Logo" 
+            style={{ 
+              width: 32, 
+              height: 32, 
+              marginRight: 8 
+            }} 
+          />
           <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
             AdGenius
           </Typography>

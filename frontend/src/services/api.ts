@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 import Cookies from "js-cookie";
+import { auth } from "../config/firebase";
 import {
   API_CONFIG,
   ApiResponse,
@@ -42,9 +43,9 @@ class ApiService {
   private setupInterceptors() {
     // Request interceptor
     this.api.interceptors.request.use(
-      (config) => {
+      async (config) => {
         // Add authentication token
-        const token = this.getAuthToken();
+        const token = await this.getAuthToken();
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -79,13 +80,27 @@ class ApiService {
     );
   }
 
-  private getAuthToken(): string | null {
-    return (
-      Cookies.get("authToken") ||
-      localStorage.getItem("authToken") ||
-      import.meta.env.VITE_AUTH_TOKEN ||
-      "placeholder-token"
-    );
+  private async getAuthToken(): Promise<string | null> {
+    try {
+      // First check if user is authenticated with Firebase
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        // Get fresh Firebase ID token
+        const idToken = await currentUser.getIdToken();
+        return idToken;
+      }
+
+      // Fallback to stored tokens (for temporary compatibility)
+      return (
+        Cookies.get("authToken") || localStorage.getItem("authToken") || null
+      );
+    } catch (error) {
+      console.error("Error getting Firebase ID token:", error);
+      // Fallback to stored tokens if Firebase fails
+      return (
+        Cookies.get("authToken") || localStorage.getItem("authToken") || null
+      );
+    }
   }
 
   private loadTenantContext() {

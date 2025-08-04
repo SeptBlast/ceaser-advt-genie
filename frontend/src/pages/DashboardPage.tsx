@@ -8,12 +8,10 @@ import {
   Chip,
   IconButton,
   Button,
-  LinearProgress,
   useTheme,
   alpha,
   Avatar,
   Stack,
-  Divider,
 } from '@mui/material';
 import {
   TrendingUp,

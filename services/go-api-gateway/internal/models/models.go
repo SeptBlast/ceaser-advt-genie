@@ -188,6 +188,24 @@ type InsightRequest struct {
 	Parameters  map[string]interface{} `json:"parameters"`
 }
 
+// Analytics represents an analytics event
+type Analytics struct {
+	ID         string                 `firestore:"-" json:"id"`
+	UserID     string                 `firestore:"user_id" json:"user_id"`
+	TenantID   string                 `firestore:"tenant_id" json:"tenant_id"`
+	CampaignID string                 `firestore:"campaign_id" json:"campaign_id"`
+	CreativeID string                 `firestore:"creative_id" json:"creative_id,omitempty"`
+	EventType  string                 `firestore:"event_type" json:"event_type" binding:"required"` // impression, click, conversion, etc.
+	Platform   string                 `firestore:"platform" json:"platform"`
+	Source     string                 `firestore:"source" json:"source"`
+	Metrics    map[string]interface{} `firestore:"metrics" json:"metrics"`
+	Properties map[string]interface{} `firestore:"properties" json:"properties"`
+	Timestamp  time.Time              `firestore:"timestamp" json:"timestamp"`
+	SessionID  string                 `firestore:"session_id" json:"session_id,omitempty"`
+	DeviceInfo map[string]interface{} `firestore:"device_info" json:"device_info,omitempty"`
+	Location   map[string]interface{} `firestore:"location" json:"location,omitempty"`
+}
+
 // Response wrapper
 type APIResponse struct {
 	Success bool        `json:"success"`

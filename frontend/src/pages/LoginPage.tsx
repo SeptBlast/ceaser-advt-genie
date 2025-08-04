@@ -10,7 +10,6 @@ import {
   Divider,
   Alert,
   Link,
-  Stack,
   IconButton,
   InputAdornment,
   Checkbox,
@@ -22,7 +21,6 @@ import {
   Visibility,
   VisibilityOff,
   Google,
-  Lightbulb,
   Email,
   Lock,
 } from '@mui/icons-material';
@@ -104,8 +102,8 @@ const LoginPage: React.FC = () => {
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Box
               sx={{
-                width: 64,
-                height: 64,
+                width: 70,
+                height: 70,
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                 display: 'flex',
@@ -113,9 +111,18 @@ const LoginPage: React.FC = () => {
                 justifyContent: 'center',
                 mx: 'auto',
                 mb: 2,
+                p: 1,
               }}
             >
-              <Lightbulb sx={{ color: 'white', fontSize: 32 }} />
+              <img 
+                src="/assets/logo.svg" 
+                alt="AdGenius Logo" 
+                style={{ 
+                  width: 60, 
+                  height: 60,
+                  filter: 'brightness(0) invert(1)' // Make logo white
+                }} 
+              />
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
               Welcome Back

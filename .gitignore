@@ -206,3 +206,15 @@ bower_components
 psd
 thumb
 sketch
+
+# Firebase Security Files
+firebase/service-account.json
+firebase/service-account-*.json
+**/firebase-service-account.json
+**/service-account.json
+.firebase/
+
+# Environment files with secrets
+.env.local
+.env.production
+.env.development

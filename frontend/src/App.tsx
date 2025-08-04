@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './ThemeProvider';
 import { AuthProvider } from './contexts/AuthContext';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -22,9 +24,10 @@ import ProfilePage from './pages/ProfilePage';
 const App: React.FC = () => {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <Router>
-          <Routes>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <AuthProvider>
+          <Router>
+            <Routes>
             {/* Public routes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -94,6 +97,7 @@ const App: React.FC = () => {
           </Routes>
         </Router>
       </AuthProvider>
+      </LocalizationProvider>
     </ThemeProvider>
   );
 };

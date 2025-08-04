@@ -96,9 +96,9 @@ A professional-grade, multi-tenant SaaS platform that leverages Google's Generat
 
 4. **Access the application**:
    - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - Admin Panel: http://localhost:8000/admin
-   - API Documentation: http://localhost:8000/api/docs
+   - Backend API: http://localhost:8080
+   - Admin Panel: http://localhost:8080/admin
+   - API Documentation: http://localhost:8080/api/docs
 
 ### Local Development
 
@@ -159,8 +159,8 @@ A professional-grade, multi-tenant SaaS platform that leverages Google's Generat
 
 The API is documented using OpenAPI 3.0 specification. Access the interactive documentation at:
 
-- **ReDoc**: http://localhost:8000/api/docs/
-- **Schema**: http://localhost:8000/api/schema/
+- **ReDoc**: http://localhost:8080/api/docs/
+- **Schema**: http://localhost:8080/api/schema/
 
 ### Key Endpoints
 

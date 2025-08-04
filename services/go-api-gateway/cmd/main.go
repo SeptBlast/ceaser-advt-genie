@@ -8,13 +8,14 @@ import (
 	"syscall"
 	"time"
 
+	"firebase.google.com/go/v4/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"github.com/startupmanch/ceaser-ad-business/go-api-gateway/internal/database"
 	"github.com/startupmanch/ceaser-ad-business/go-api-gateway/internal/grpc"
 	"github.com/startupmanch/ceaser-ad-business/go-api-gateway/internal/handlers"
+	"github.com/startupmanch/ceaser-ad-business/go-api-gateway/internal/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
@@ -26,28 +27,30 @@ func main() {
 
 	// Initialize logger
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logrus.SetLevel(logrus.InfoLevel)
+	logLevel := getEnv("LOG_LEVEL", "info")
+	switch logLevel {
+	case "debug":
+		logrus.SetLevel(logrus.DebugLevel)
+	case "warn":
+		logrus.SetLevel(logrus.WarnLevel)
+	case "error":
+		logrus.SetLevel(logrus.ErrorLevel)
+	default:
+		logrus.SetLevel(logrus.InfoLevel)
+	}
 
-	// Initialize Firestore connection
+	// Initialize Firebase Firestore connection
 	firestoreClient, err := database.NewFirestoreClient()
 	if err != nil {
 		logrus.Fatal("Failed to connect to Firestore: ", err)
 	}
 	defer firestoreClient.Close()
 
-	// TODO: Initialize Redis when services are ready
-	// redisConfig := services.CacheConfig{
-	// 	Host:     getEnv("REDIS_HOST", "localhost"),
-	// 	Port:     getEnv("REDIS_PORT", "6379"),
-	// 	Username: getEnv("REDIS_USERNAME", ""),
-	// 	Password: getEnv("REDIS_PASSWORD", ""),
-	// 	Database: 0,
-	// }
-	//
-	// redisService, err := services.NewRedisService(redisConfig)
-	// if err != nil {
-	// 	logrus.Fatal("Failed to connect to Redis: ", err)
-	// }
+	// Initialize Firebase Auth client for token verification
+	authClient, err := initFirebaseAuth(firestoreClient.ProjectID)
+	if err != nil {
+		logrus.Fatal("Failed to initialize Firebase Auth: ", err)
+	}
 
 	// Initialize gRPC client for AI Engine
 	aiEngineClient, err := grpc.NewAIEngineClient()
@@ -55,12 +58,6 @@ func main() {
 		logrus.Fatal("Failed to connect to AI Engine: ", err)
 	}
 	defer aiEngineClient.Close()
-
-	// TODO: Initialize new services when handlers are ready
-	// tenantService := services.NewTenantService(mongoClient.Client, redisService)
-	// billingService := services.NewBillingService(mongoClient.Database, redisService)
-	// analyticsService := services.NewAnalyticsService(mongoClient.Database, redisService)
-	// adGenerationService := services.NewAdGenerationService(mongoClient.Database, redisService, aiEngineClient)
 
 	// Initialize Gin router
 	if os.Getenv("GIN_MODE") == "release" {
@@ -73,35 +70,43 @@ func main() {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Use(otelgin.Middleware("ceaser-ad-business-api"))
-
-	// CORS configuration
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:3001"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
-		AllowedHeaders:   []string{"*"},
-		AllowCredentials: true,
-	})
-	router.Use(func(ctx *gin.Context) {
-		c.HandlerFunc(ctx.Writer, ctx.Request)
-		ctx.Next()
-	})
+	router.Use(middleware.CORS()) // Use our custom CORS middleware
 
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":    "healthy",
 			"service":   "ceaser-ad-business-api",
+			"database":  "firestore",
+			"auth":      "firebase",
 			"timestamp": time.Now().UTC(),
 		})
 	})
+
+	// Initialize Firebase Auth middleware
+	authMiddleware := middleware.NewFirebaseAuthMiddleware(authClient)
 
 	// Initialize handlers with Firestore
 	campaignHandler := handlers.NewFirestoreCampaignHandler(firestoreClient, aiEngineClient)
 	creativeHandler := handlers.NewFirestoreCreativeHandler(firestoreClient)
 	analyticsHandler := handlers.NewFirestoreAnalyticsHandler(firestoreClient)
 
-	// API routes
+	// Public API routes (no authentication required)
+	public := router.Group("/api/v1/public")
+	{
+		public.GET("/health", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"status":   "healthy",
+				"database": "firestore",
+				"auth":     "firebase",
+			})
+		})
+	}
+
+	// Protected API routes (Firebase authentication required)
 	api := router.Group("/api/v1")
+	api.Use(authMiddleware.RequireAuth())
+	api.Use(authMiddleware.RequireEmailVerified()) // Require verified email
 	{
 		// Campaign routes
 		campaigns := api.Group("/campaigns")
@@ -134,13 +139,19 @@ func main() {
 			analytics.GET("/dashboard", analyticsHandler.GetDashboardAnalytics)
 			analytics.GET("/reports", analyticsHandler.GetAnalyticsReport)
 		}
+
+		// Agent workflow routes (TODO: Update for Firestore)
+		/*
+			agent := api.Group("/agent")
+			{
+				agent.POST("/workflow", handlers.ExecuteAgentWorkflow(aiEngineClient))
+				agent.POST("/analyze", handlers.AnalyzeCampaignWithAgent(aiEngineClient))
+			}
+		*/
 	}
 
 	// Start server
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8000"
-	}
+	port := getEnv("PORT", "8080")
 
 	srv := &http.Server{
 		Addr:    ":" + port,
@@ -149,7 +160,11 @@ func main() {
 
 	// Graceful shutdown
 	go func() {
-		logrus.Infof("Starting server on port %s", port)
+		logrus.WithFields(logrus.Fields{
+			"port":     port,
+			"database": "firestore",
+			"auth":     "firebase",
+		}).Info("Starting server")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logrus.Fatal("Failed to start server: ", err)
 		}
@@ -171,7 +186,26 @@ func main() {
 	logrus.Info("Server exited")
 }
 
-// getEnv returns the environment variable value or the default value if not set
+// initFirebaseAuth initializes Firebase Auth client
+func initFirebaseAuth(projectID string) (*auth.Client, error) {
+	ctx := context.Background()
+
+	// Create a new Firebase app specifically for Auth
+	app, err := database.NewFirebaseApp(projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	authClient, err := app.Auth(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	logrus.Info("Firebase Auth client initialized successfully")
+	return authClient, nil
+}
+
+// getEnv retrieves environment variable or returns default value
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value

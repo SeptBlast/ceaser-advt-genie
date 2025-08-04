@@ -12,7 +12,7 @@ echo "Stop services:        make stop"
 echo "View logs:            make logs"
 echo "Health check:         make health"
 echo "Development setup:    ./setup.sh"
-echo "API documentation:    curl http://localhost:8000/health"
+echo "API documentation:    curl http://localhost:8080/health"
 echo "Cloud configuration:  docs/CLOUD_CONFIGURATION.md"
 
 echo
@@ -100,7 +100,7 @@ echo "========================"
 
 # Test endpoints if services are running
 if [ "$services_running" = true ]; then
-    test_endpoint "http://localhost:8000/health" "Go API Gateway"
+    test_endpoint "http://localhost:8080/health" "Go API Gateway"
     
     # Check if AI Engine gRPC port is listening
     if netstat -an 2>/dev/null | grep -q ":50051.*LISTEN" || ss -an 2>/dev/null | grep -q ":50051.*LISTEN"; then
@@ -226,7 +226,7 @@ echo "Stop services:      make stop"
 echo "View logs:          make logs"
 echo "Health check:       make health"
 echo "Development setup:  ./setup.sh"
-echo "API documentation:  curl http://localhost:8000/health"
+echo "API documentation:  curl http://localhost:8080/health"
 
 echo
 echo "📚 Documentation"
@@ -241,7 +241,7 @@ echo "=========="
 
 if [ "$services_running" = true ]; then
     echo -e "${GREEN}🎉 Polyglot architecture is running successfully!${NC}"
-    echo -e "${GREEN}✓${NC} Go API Gateway: http://localhost:8000"
+    echo -e "${GREEN}✓${NC} Go API Gateway: http://localhost:8080"
     echo -e "   • Python AI Engine: gRPC on port 50051"
     echo -e "   • MongoDB Atlas: ceaser-ad-gini.jokuuab.mongodb.net"
     echo -e "   • Redis Cloud: configured via REDIS_URL"

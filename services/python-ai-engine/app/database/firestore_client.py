@@ -18,6 +18,7 @@ class FirestoreClient:
     def __init__(self):
         self.db = None
         self.project_id = None
+        self.database_id = None
         self._initialize_firebase()
     
     def _initialize_firebase(self):
@@ -28,6 +29,9 @@ class FirestoreClient:
             if not self.project_id:
                 raise ValueError("FIREBASE_PROJECT_ID environment variable is required")
             
+            # Get Firebase database ID (optional, defaults to "(default)")
+            self.database_id = os.getenv("FIREBASE_DATABASE_ID", "(default)")
+            
             # Check if Firebase is already initialized
             if not firebase_admin._apps:
                 # Check for service account key file (production)
@@ -37,26 +41,27 @@ class FirestoreClient:
                     # Production: use service account key file
                     cred = credentials.Certificate(service_account_path)
                     firebase_admin.initialize_app(cred, {
-                        'projectId': self.project_id
+                        'projectId': self.project_id,
+                        'databaseId': self.database_id if self.database_id != "(default)" else None
                     })
                     logger.info("Firebase initialized with service account", 
-                              project_id=self.project_id)
+                              project_id=self.project_id, database_id=self.database_id)
                 else:
-                    # Development: use emulator or Application Default Credentials
-                    emulator_host = os.getenv("FIRESTORE_EMULATOR_HOST")
-                    if emulator_host:
-                        logger.info("Using Firestore emulator", host=emulator_host)
-                    
                     # Initialize with default credentials
                     firebase_admin.initialize_app(options={
-                        'projectId': self.project_id
+                        'projectId': self.project_id,
+                        'databaseId': self.database_id if self.database_id != "(default)" else None
                     })
                     logger.info("Firebase initialized with default credentials", 
-                              project_id=self.project_id)
+                              project_id=self.project_id, database_id=self.database_id)
             
-            # Get Firestore client
-            self.db = firestore.client()
-            logger.info("Successfully connected to Firestore")
+            # Get Firestore client for specific database
+            if self.database_id and self.database_id != "(default)":
+                self.db = firestore.client(database=self.database_id)
+                logger.info("Successfully connected to Firestore database", database_id=self.database_id)
+            else:
+                self.db = firestore.client()
+                logger.info("Successfully connected to default Firestore database")
             
         except Exception as e:
             logger.error("Failed to initialize Firebase", error=str(e))

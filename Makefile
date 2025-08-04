@@ -1,7 +1,7 @@
 # Ceaser Ad Business - Polyglot Microservices Makefile
 # This Makefile provides commands for development, testing, and deployment
 
-.PHONY: help start stop restart build logs health test clean dev setup proto install-deps
+.PHONY: help start stop restart build logs health test clean dev setup setup-firebase validate-firebase proto install-deps
 
 # Default target
 .DEFAULT_GOAL := help
@@ -35,6 +35,8 @@ help:
 	@echo "  make dev-python     - Run Python service locally"
 	@echo "  make dev-frontend   - Run frontend locally"
 	@echo "  make setup          - Run initial setup"
+	@echo "  make setup-firebase - Setup Firebase configuration"
+	@echo "  make validate-firebase - Validate Firebase setup"
 	@echo ""
 	@echo "$(YELLOW)🧪 Testing:$(NC)"
 	@echo "  make test           - Run all tests"
@@ -64,7 +66,7 @@ start:
 	docker compose -f $(COMPOSE_FILE) up -d
 	@echo "$(GREEN)✅ Services started!$(NC)"
 	@echo "$(BLUE)📊 Service URLs:$(NC)"
-	@echo "  • Go API Gateway: http://localhost:8000"
+	@echo "  • Go API Gateway: http://localhost:8080"
 	@echo "  • Frontend: http://localhost:3000"
 	@echo "  • Python AI Engine: gRPC on port 50051"
 	@echo "  • Qdrant Vector DB: http://localhost:6333"
@@ -184,6 +186,16 @@ setup:
 	@echo "$(BLUE)⚙️  Running initial setup...$(NC)"
 	@./setup.sh
 
+## Setup Firebase configuration
+setup-firebase:
+	@echo "$(BLUE)🔥 Setting up Firebase configuration...$(NC)"
+	@./firebase/setup-firebase.sh
+
+## Validate Firebase configuration
+validate-firebase:
+	@echo "$(BLUE)🔍 Validating Firebase configuration...$(NC)"
+	@./firebase/validate-firebase.sh
+
 ## Configure cloud services
 configure-cloud:
 	@echo "$(BLUE)☁️  Configuring cloud services...$(NC)"
@@ -287,11 +299,11 @@ backup-env:
 ## Show service URLs
 urls:
 	@echo "$(BLUE)🌐 Service URLs:$(NC)"
-	@echo "$(GREEN)Go API Gateway:$(NC)      http://localhost:8000"
+	@echo "$(GREEN)Go API Gateway:$(NC)      http://localhost:8080"
 	@echo "$(GREEN)Frontend:$(NC)            http://localhost:3000"
 	@echo "$(GREEN)Qdrant Vector DB:$(NC)    http://localhost:6333"
 	@echo "$(GREEN)Jaeger Tracing:$(NC)      http://localhost:16686"
-	@echo "$(GREEN)API Health Check:$(NC)    http://localhost:8000/health"
+	@echo "$(GREEN)API Health Check:$(NC)    http://localhost:8080/health"
 	@echo "$(GREEN)gRPC AI Engine:$(NC)      localhost:50051"
 
 ## Production deployment
@@ -324,7 +336,7 @@ docs:
 	@echo "$(GREEN)Available documentation:$(NC)"
 	@echo "  • Architecture: README-POLYGLOT.md"
 	@echo "  • Cloud Setup: docs/CLOUD_CONFIGURATION.md"
-	@echo "  • API Documentation: http://localhost:8000/docs (when running)"
+	@echo "  • API Documentation: http://localhost:8080/docs (when running)"
 
 ## Lint code
 lint:
@@ -336,7 +348,7 @@ lint:
 ## Run quick health check
 quick-check:
 	@echo "$(BLUE)⚡ Quick health check...$(NC)"
-	@curl -s http://localhost:8000/health > /dev/null && echo "$(GREEN)✅ API Gateway: Healthy$(NC)" || echo "$(RED)❌ API Gateway: Down$(NC)"
+	@curl -s http://localhost:8080/health > /dev/null && echo "$(GREEN)✅ API Gateway: Healthy$(NC)" || echo "$(RED)❌ API Gateway: Down$(NC)"
 	@curl -s http://localhost:3000 > /dev/null && echo "$(GREEN)✅ Frontend: Healthy$(NC)" || echo "$(RED)❌ Frontend: Down$(NC)"
 
 ## Install frontend dependencies

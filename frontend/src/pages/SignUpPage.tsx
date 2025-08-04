@@ -22,7 +22,6 @@ import {
   Visibility,
   VisibilityOff,
   Google,
-  Lightbulb,
   Email,
   Lock,
   Person,
@@ -168,8 +167,8 @@ const SignUpPage: React.FC = () => {
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Box
               sx={{
-                width: 64,
-                height: 64,
+                width: 70,
+                height: 70,
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                 display: 'flex',
@@ -179,7 +178,15 @@ const SignUpPage: React.FC = () => {
                 mb: 2,
               }}
             >
-              <Lightbulb sx={{ color: 'white', fontSize: 32 }} />
+              <img 
+                src="/assets/logo.svg" 
+                alt="AdGenius Logo" 
+                style={{ 
+                  width: 60, 
+                  height: 60,
+                  filter: 'brightness(0) invert(1)' // Make logo white
+                }} 
+              />
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
               Create Account

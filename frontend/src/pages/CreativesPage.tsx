@@ -33,8 +33,6 @@ import {
   Delete,
   Visibility,
   AutoAwesome,
-  PlayArrow,
-  Pause,
   Download,
   Share,
   Psychology,
@@ -51,7 +49,6 @@ const CreativesPage: React.FC = () => {
   const navigate = useNavigate();
   const { 
     creatives, 
-    campaigns,
     loading, 
     fetchCreatives, 
     fetchCampaigns,

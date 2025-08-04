@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Card,
-  CardContent,
   Grid,
   Stack,
   Chip,
@@ -28,9 +27,7 @@ import {
   AutoAwesome,
   Psychology,
   ArrowForward,
-  Lightbulb,
   Groups,
-  Insights,
   Brightness4,
   Brightness7,
 } from '@mui/icons-material';
@@ -120,8 +117,8 @@ const HomePage: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
             <Box
               sx={{
-                width: 40,
-                height: 40,
+                width: 50,
+                height: 50,
                 borderRadius: 2,
                 background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                 display: 'flex',
@@ -130,7 +127,15 @@ const HomePage: React.FC = () => {
                 mr: 2,
               }}
             >
-              <Lightbulb sx={{ color: 'white', fontSize: 24 }} />
+              <img 
+                src="/assets/logo.svg" 
+                alt="AdGenius Logo" 
+                style={{ 
+                  width: 40, 
+                  height: 40,
+                  filter: 'brightness(0) invert(1)' // Make logo white
+                }} 
+              />
             </Box>
             <Typography 
               variant="h6" 
@@ -604,7 +609,15 @@ const HomePage: React.FC = () => {
                     mr: 2,
                   }}
                 >
-                  <Lightbulb sx={{ color: 'white', fontSize: 20 }} />
+                  <img 
+                    src="/assets/logo.svg" 
+                    alt="AdGenius Logo" 
+                    style={{ 
+                      width: 30, 
+                      height: 30,
+                      filter: 'brightness(0) invert(1)' // Make logo white
+                    }} 
+                  />
                 </Box>
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   AdGenius
