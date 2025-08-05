@@ -230,7 +230,6 @@ const HomePage: React.FC = () => {
             borderRadius: 4,
             bgcolor: alpha(theme.palette.primary.main, 0.05),
             border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-            mb: 8,
           }}
         >
           <Typography

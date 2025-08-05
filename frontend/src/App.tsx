@@ -4,7 +4,7 @@ import { ThemeProvider } from './ThemeProvider';
 import { AuthProvider } from './contexts/AuthContext';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import Layout from './components/Layout';
+import Layout from './components/CeaserLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages

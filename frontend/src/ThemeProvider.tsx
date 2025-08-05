@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { theme, darkTheme } from './theme';
+import { caeserLightTheme, caeserDarkTheme } from './theme/caeserTheme';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -84,7 +84,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     setMode(prevMode => prevMode === 'light' ? 'dark' : 'light');
   };
 
-  const currentTheme = mode === 'light' ? theme : darkTheme;
+  const currentTheme = mode === 'light' ? caeserLightTheme : caeserDarkTheme;
 
   return (
     <ThemeContext.Provider value={{ mode, toggleTheme }}>
