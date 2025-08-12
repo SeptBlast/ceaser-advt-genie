@@ -40,12 +40,10 @@ services:
       STABILITY_API_KEY: ${STABILITY_API_KEY:-}
       LUMA_API_KEY: ${LUMA_API_KEY:-}
 
-      # AWS S3 Configuration for video storage
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-      AWS_REGION: ${AWS_REGION:-us-east-1}
-      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-ceaser-advt-genius-videos}
-      S3_VIDEO_PREFIX: ${S3_VIDEO_PREFIX:-videos}
+      # Firebase Storage Configuration for video storage
+      FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET:-ceaseradvtgenerator.appspot.com}
+      FIREBASE_SERVICE_ACCOUNT: ${FIREBASE_SERVICE_ACCOUNT:-/app/firebase/service-account.json}
+      FIREBASE_VIDEO_PREFIX: ${FIREBASE_VIDEO_PREFIX:-videos}
 
       # Redis Configuration (remote Redis)
       REDIS_URL: ${REDIS_URL:-redis://localhost:6379/1}

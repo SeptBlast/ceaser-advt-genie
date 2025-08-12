@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 import structlog
-from .s3_storage import S3VideoStorage
+from .firebase_storage import FirebaseVideoStorage
 
 logger = structlog.get_logger()
 
@@ -43,7 +43,7 @@ class VideoPrompt:
 class GenerationResult:
     success: bool
     content_url: Optional[str]
-    s3_url: Optional[str]  # Added S3 storage URL
+    firebase_url: Optional[str]  # Changed from s3_url to firebase_url
     job_id: Optional[str]
     model: str
     provider: str
@@ -78,7 +78,7 @@ class MockProvider(BaseVideoProvider):
         return GenerationResult(
             success=True,
             content_url=url,
-            s3_url=None,  # S3 URL will be populated by storage service
+            firebase_url=None,  # Firebase URL will be populated by storage service
             job_id=vid_id,
             model="mock",
             provider=self.name,
@@ -111,7 +111,7 @@ class RunwayProvider(BaseVideoProvider):
         return GenerationResult(
             True,
             url,
-            None,  # S3 URL will be populated by storage service
+            None,  # Firebase URL will be populated by storage service
             job_id,
             VideoModel.RUNWAY_GEN3.value,
             self.name,
@@ -135,7 +135,7 @@ class PikaProvider(BaseVideoProvider):
         return GenerationResult(
             True,
             url,
-            None,  # S3 URL will be populated by storage service
+            None,  # Firebase URL will be populated by storage service
             job_id,
             VideoModel.PIKA_V2.value,
             self.name,
@@ -159,7 +159,7 @@ class StabilitySVDProvider(BaseVideoProvider):
         return GenerationResult(
             True,
             url,
-            None,  # S3 URL will be populated by storage service
+            None,  # Firebase URL will be populated by storage service
             job_id,
             VideoModel.STABILITY_SVD.value,
             self.name,
@@ -183,7 +183,7 @@ class LumaProvider(BaseVideoProvider):
         return GenerationResult(
             True,
             url,
-            None,  # S3 URL will be populated by storage service
+            None,  # Firebase URL will be populated by storage service
             job_id,
             VideoModel.LUMA_DREAM.value,
             self.name,
@@ -207,7 +207,7 @@ class GoogleVeoProvider(BaseVideoProvider):
         return GenerationResult(
             True,
             url,
-            None,  # S3 URL will be populated by storage service
+            None,  # Firebase URL will be populated by storage service
             job_id,
             VideoModel.GOOGLE_VEO.value,
             self.name,
@@ -231,7 +231,7 @@ class OpenAIShortsProvider(BaseVideoProvider):
         return GenerationResult(
             True,
             url,
-            None,  # S3 URL will be populated by storage service
+            None,  # Firebase URL will be populated by storage service
             job_id,
             VideoModel.OPENAI_SHORTS.value,
             self.name,
@@ -256,7 +256,9 @@ class VideoGenerationService:
             VideoModel.OPENAI_SHORTS: OpenAIShortsProvider(),
         }
         self.mock = MockProvider()
-        self.s3_storage = S3VideoStorage()  # Initialize S3 storage service
+        self.firebase_storage = (
+            FirebaseVideoStorage()
+        )  # Initialize Firebase storage service
 
     def get_supported_models(self) -> List[str]:
         return [m.value for m in VideoModel]
@@ -265,10 +267,12 @@ class VideoGenerationService:
         try:
             vm = VideoModel(model)
         except Exception:
-            logger.warning("Unknown model requested; using mock", model=model)
-            return self.mock
+            logger.warning(
+                "Unknown model requested; using google_veo as default", model=model
+            )
+            return self.providers[VideoModel.GOOGLE_VEO]
 
-        provider = self.providers.get(vm, self.mock)
+        provider = self.providers.get(vm, self.providers[VideoModel.GOOGLE_VEO])
         # If provider lacks API key, still return it; the provider handles fallback behavior
         return provider
 
@@ -292,25 +296,25 @@ class VideoGenerationService:
                     **{**prompt.__dict__, "seed": random.randint(1, 10_000_000)}
                 )
             res = await provider.generate(p, assets)
-            
-            # Store video in S3 if generation was successful
+
+            # Store video in Firebase Storage if generation was successful
             if res.success and res.content_url:
-                s3_url = await self.s3_storage.download_and_store_video(
+                firebase_url = await self.firebase_storage.download_and_store_video(
                     video_url=res.content_url,
                     tenant_name=tenant_name,
                     creative_id=creative_id,
-                    iteration=i + 1
+                    iteration=i + 1,
                 )
-                res.s3_url = s3_url
+                res.firebase_url = firebase_url
                 logger.info(
-                    "Video stored in S3",
+                    "Video stored in Firebase Storage",
                     tenant=tenant_name,
                     creative_id=creative_id,
                     iteration=i + 1,
-                    s3_url=s3_url,
-                    original_url=res.content_url
+                    firebase_url=firebase_url,
+                    original_url=res.content_url,
                 )
-            
+
             results.append(res)
 
         return {
@@ -320,7 +324,7 @@ class VideoGenerationService:
             "results": [
                 {
                     "content_url": r.content_url,
-                    "s3_url": r.s3_url,
+                    "firebase_url": r.firebase_url,
                     "job_id": r.job_id,
                     "params": r.params,
                     "message": r.message,
@@ -330,14 +334,18 @@ class VideoGenerationService:
             "supported_models": self.get_supported_models(),
         }
 
-    async def list_tenant_videos(self, tenant_name: str, limit: int = 100) -> List[Dict]:
+    async def list_tenant_videos(
+        self, tenant_name: str, limit: int = 100
+    ) -> List[Dict]:
         """List all videos stored for a specific tenant."""
-        return self.s3_storage.list_tenant_videos(tenant_name, limit)
-    
-    def generate_presigned_url(self, s3_key: str, expiration: int = 3600) -> Optional[str]:
-        """Generate a presigned URL for secure video access."""
-        return self.s3_storage.generate_presigned_url(s3_key, expiration)
-    
-    def delete_video(self, s3_key: str) -> bool:
-        """Delete a video from S3 storage."""
-        return self.s3_storage.delete_video(s3_key)
+        return self.firebase_storage.list_tenant_videos(tenant_name, limit)
+
+    def generate_signed_url(
+        self, firebase_path: str, expiration: int = 3600
+    ) -> Optional[str]:
+        """Generate a signed URL for secure video access."""
+        return self.firebase_storage.generate_signed_url(firebase_path, expiration)
+
+    def delete_video(self, firebase_path: str) -> bool:
+        """Delete a video from Firebase Storage."""
+        return self.firebase_storage.delete_video(firebase_path)

@@ -86,7 +86,7 @@ export interface Creative {
     imageUrl?: string;
     videoUrl?: string; // provider video URL
     thumbnailUrl?: string;
-    s3VideoUrl?: string; // S3 storage URL for video
+    firebaseVideoUrl?: string; // Firebase Storage URL for video
     providerVideoUrl?: string; // Explicit provider URL if needed
   };
   aiMetadata?: {

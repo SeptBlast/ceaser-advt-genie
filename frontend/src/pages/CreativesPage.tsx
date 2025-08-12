@@ -383,8 +383,8 @@ const CreativesPage: React.FC = () => {
               >
                 {/* Creative Preview */}
                 <Box sx={{ position: 'relative' }}>
-                  {/* Show video if S3 or provider video URL exists */}
-                  {creative.type === 'video' && ((creative.content as any).s3VideoUrl || creative.content.videoUrl || (creative.content as any).providerVideoUrl) ? (
+                  {/* Show video if Firebase or provider video URL exists */}
+                  {creative.type === 'video' && ((creative.content as any).firebaseVideoUrl || creative.content.videoUrl || (creative.content as any).providerVideoUrl) ? (
                     <video
                       height="200"
                       width="100%"
@@ -392,7 +392,7 @@ const CreativesPage: React.FC = () => {
                       poster={creative.content.thumbnailUrl || creative.content.imageUrl}
                       style={{ objectFit: 'cover', maxHeight: 200 }}
                     >
-                      {(creative.content as any).s3VideoUrl && <source src={(creative.content as any).s3VideoUrl} type="video/mp4" />}
+                      {(creative.content as any).firebaseVideoUrl && <source src={(creative.content as any).firebaseVideoUrl} type="video/mp4" />}
                       {(creative.content as any).providerVideoUrl && <source src={(creative.content as any).providerVideoUrl} type="video/mp4" />}
                       {creative.content.videoUrl && <source src={creative.content.videoUrl} type="video/mp4" />}
                       Your browser does not support the video tag.
