@@ -44,23 +44,23 @@ func (h *TeamHandler) GetTeamMembers(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Get pagination parameters
 	page := 1
 	limit := 10
-	
+
 	if pageStr := c.Query("page"); pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
 			page = p
 		}
 	}
-	
+
 	if limitStr := c.Query("limit"); limitStr != "" {
 		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
 			limit = l
 		}
 	}
-	
+
 	// Check permissions
 	userID := c.GetString("user_id")
 	if userID == "" {
@@ -70,7 +70,7 @@ func (h *TeamHandler) GetTeamMembers(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Check if user can read team members
 	permissionCheck, err := h.teamService.CheckPermission(c.Request.Context(), userID, tenantID, models.PermissionTenantReadUsers)
 	if err != nil {
@@ -80,7 +80,7 @@ func (h *TeamHandler) GetTeamMembers(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	if !permissionCheck.HasPermission {
 		c.JSON(http.StatusForbidden, models.APIResponse{
 			Success: false,
@@ -88,7 +88,7 @@ func (h *TeamHandler) GetTeamMembers(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Get team members
 	result, err := h.teamService.GetTeamMembers(c.Request.Context(), tenantID, page, limit)
 	if err != nil {
@@ -98,7 +98,7 @@ func (h *TeamHandler) GetTeamMembers(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, models.APIResponse{
 		Success: true,
 		Data:    result,
@@ -122,7 +122,7 @@ func (h *TeamHandler) GetTeamMembers(c *gin.Context) {
 func (h *TeamHandler) GetTeamMember(c *gin.Context) {
 	tenantID := c.Param("tenantId")
 	memberID := c.Param("memberId")
-	
+
 	if tenantID == "" || memberID == "" {
 		c.JSON(http.StatusBadRequest, models.APIResponse{
 			Success: false,
@@ -130,7 +130,7 @@ func (h *TeamHandler) GetTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Check permissions
 	userID := c.GetString("user_id")
 	permissionCheck, err := h.teamService.CheckPermission(c.Request.Context(), userID, tenantID, models.PermissionTenantReadUsers)
@@ -141,7 +141,7 @@ func (h *TeamHandler) GetTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Get team member
 	member, err := h.teamService.GetTeamMember(c.Request.Context(), tenantID, memberID)
 	if err != nil {
@@ -151,7 +151,7 @@ func (h *TeamHandler) GetTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, models.APIResponse{
 		Success: true,
 		Data:    member,
@@ -181,7 +181,7 @@ func (h *TeamHandler) CreateTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	var req models.CreateTeamMemberRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.APIResponse{
@@ -190,7 +190,7 @@ func (h *TeamHandler) CreateTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Check permissions
 	userID := c.GetString("user_id")
 	permissionCheck, err := h.teamService.CheckPermission(c.Request.Context(), userID, tenantID, models.PermissionTenantCreateUsers)
@@ -201,7 +201,7 @@ func (h *TeamHandler) CreateTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Create team member
 	member, err := h.teamService.CreateTeamMember(c.Request.Context(), tenantID, userID, &req)
 	if err != nil {
@@ -215,7 +215,7 @@ func (h *TeamHandler) CreateTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusCreated, models.APIResponse{
 		Success: true,
 		Data:    member,
@@ -241,7 +241,7 @@ func (h *TeamHandler) CreateTeamMember(c *gin.Context) {
 func (h *TeamHandler) UpdateTeamMember(c *gin.Context) {
 	tenantID := c.Param("tenantId")
 	memberID := c.Param("memberId")
-	
+
 	if tenantID == "" || memberID == "" {
 		c.JSON(http.StatusBadRequest, models.APIResponse{
 			Success: false,
@@ -249,7 +249,7 @@ func (h *TeamHandler) UpdateTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	var req models.UpdateTeamMemberRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.APIResponse{
@@ -258,7 +258,7 @@ func (h *TeamHandler) UpdateTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Check permissions
 	userID := c.GetString("user_id")
 	permissionCheck, err := h.teamService.CheckPermission(c.Request.Context(), userID, tenantID, models.PermissionTenantUpdateUsers)
@@ -269,7 +269,7 @@ func (h *TeamHandler) UpdateTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Update team member
 	member, err := h.teamService.UpdateTeamMember(c.Request.Context(), tenantID, memberID, &req)
 	if err != nil {
@@ -283,7 +283,7 @@ func (h *TeamHandler) UpdateTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, models.APIResponse{
 		Success: true,
 		Data:    member,
@@ -308,7 +308,7 @@ func (h *TeamHandler) UpdateTeamMember(c *gin.Context) {
 func (h *TeamHandler) DeleteTeamMember(c *gin.Context) {
 	tenantID := c.Param("tenantId")
 	memberID := c.Param("memberId")
-	
+
 	if tenantID == "" || memberID == "" {
 		c.JSON(http.StatusBadRequest, models.APIResponse{
 			Success: false,
@@ -316,7 +316,7 @@ func (h *TeamHandler) DeleteTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Check permissions
 	userID := c.GetString("user_id")
 	permissionCheck, err := h.teamService.CheckPermission(c.Request.Context(), userID, tenantID, models.PermissionTenantDeleteUsers)
@@ -327,7 +327,7 @@ func (h *TeamHandler) DeleteTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Delete team member
 	err = h.teamService.DeleteTeamMember(c.Request.Context(), tenantID, memberID)
 	if err != nil {
@@ -341,7 +341,7 @@ func (h *TeamHandler) DeleteTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, models.APIResponse{
 		Success: true,
 		Message: "Team member deleted successfully",
@@ -371,7 +371,7 @@ func (h *TeamHandler) InviteTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	var req models.InviteTeamMemberRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.APIResponse{
@@ -380,7 +380,7 @@ func (h *TeamHandler) InviteTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Check permissions
 	userID := c.GetString("user_id")
 	permissionCheck, err := h.teamService.CheckPermission(c.Request.Context(), userID, tenantID, models.PermissionTenantCreateUsers)
@@ -391,7 +391,7 @@ func (h *TeamHandler) InviteTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Create invitation
 	invitation, err := h.teamService.InviteTeamMember(c.Request.Context(), tenantID, userID, &req)
 	if err != nil {
@@ -405,7 +405,7 @@ func (h *TeamHandler) InviteTeamMember(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusCreated, models.APIResponse{
 		Success: true,
 		Data:    invitation,
@@ -436,23 +436,23 @@ func (h *TeamHandler) GetTeamInvitations(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Get pagination parameters
 	page := 1
 	limit := 10
-	
+
 	if pageStr := c.Query("page"); pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
 			page = p
 		}
 	}
-	
+
 	if limitStr := c.Query("limit"); limitStr != "" {
 		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
 			limit = l
 		}
 	}
-	
+
 	// Check permissions
 	userID := c.GetString("user_id")
 	permissionCheck, err := h.teamService.CheckPermission(c.Request.Context(), userID, tenantID, models.PermissionTenantReadUsers)
@@ -463,7 +463,7 @@ func (h *TeamHandler) GetTeamInvitations(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Get invitations
 	result, err := h.teamService.GetTeamInvitations(c.Request.Context(), tenantID, page, limit)
 	if err != nil {
@@ -473,7 +473,7 @@ func (h *TeamHandler) GetTeamInvitations(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, models.APIResponse{
 		Success: true,
 		Data:    result,
@@ -503,7 +503,7 @@ func (h *TeamHandler) AcceptInvitation(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	var req models.AcceptInvitationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.APIResponse{
@@ -512,9 +512,9 @@ func (h *TeamHandler) AcceptInvitation(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	req.Token = token
-	
+
 	// Accept invitation
 	member, err := h.teamService.AcceptInvitation(c.Request.Context(), token, &req)
 	if err != nil {
@@ -530,7 +530,7 @@ func (h *TeamHandler) AcceptInvitation(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, models.APIResponse{
 		Success: true,
 		Data:    member,
@@ -559,7 +559,7 @@ func (h *TeamHandler) CheckPermission(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	userID := c.GetString("user_id")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, models.APIResponse{
@@ -568,7 +568,7 @@ func (h *TeamHandler) CheckPermission(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// Check permission
 	result, err := h.teamService.CheckPermission(c.Request.Context(), userID, req.TenantID, req.Permission)
 	if err != nil {
@@ -578,7 +578,7 @@ func (h *TeamHandler) CheckPermission(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, models.APIResponse{
 		Success: true,
 		Data:    result,

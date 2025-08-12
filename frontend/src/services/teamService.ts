@@ -1,4 +1,4 @@
-import { TeamMember, TeamInvitation, UserRole } from '../types/team';
+import { TeamMember, TeamInvitation, UserRole } from "../types/team";
 
 export interface CreateTeamMemberRequest {
   email: string;
@@ -38,15 +38,15 @@ class TeamService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+    this.baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
   }
 
   private async getAuthHeaders(): Promise<{ [key: string]: string }> {
     // This should get the Firebase auth token
-    const token = localStorage.getItem('authToken'); // Placeholder - replace with actual token retrieval
+    const token = localStorage.getItem("authToken"); // Placeholder - replace with actual token retrieval
     return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     };
   }
 
@@ -59,7 +59,11 @@ class TeamService {
   }
 
   // Get team members for a tenant
-  async getTeamMembers(tenantId: string, page = 1, limit = 10): Promise<TeamMemberListResponse> {
+  async getTeamMembers(
+    tenantId: string,
+    page = 1,
+    limit = 10
+  ): Promise<TeamMemberListResponse> {
     const headers = await this.getAuthHeaders();
     const response = await fetch(
       `${this.baseUrl}/api/v1/tenants/${tenantId}/team/members?page=${page}&limit=${limit}`,
@@ -69,7 +73,11 @@ class TeamService {
   }
 
   // Get team invitations for a tenant
-  async getTeamInvitations(tenantId: string, page = 1, limit = 10): Promise<TeamInvitationListResponse> {
+  async getTeamInvitations(
+    tenantId: string,
+    page = 1,
+    limit = 10
+  ): Promise<TeamInvitationListResponse> {
     const headers = await this.getAuthHeaders();
     const response = await fetch(
       `${this.baseUrl}/api/v1/tenants/${tenantId}/team/invitations?page=${page}&limit=${limit}`,
@@ -79,12 +87,15 @@ class TeamService {
   }
 
   // Invite a new team member
-  async inviteTeamMember(tenantId: string, request: InviteTeamMemberRequest): Promise<TeamInvitation> {
+  async inviteTeamMember(
+    tenantId: string,
+    request: InviteTeamMemberRequest
+  ): Promise<TeamInvitation> {
     const headers = await this.getAuthHeaders();
     const response = await fetch(
       `${this.baseUrl}/api/v1/tenants/${tenantId}/team/invite`,
       {
-        method: 'POST',
+        method: "POST",
         headers,
         body: JSON.stringify(request),
       }
@@ -93,12 +104,15 @@ class TeamService {
   }
 
   // Create team member directly (for super admin)
-  async createTeamMember(tenantId: string, request: CreateTeamMemberRequest): Promise<TeamMember> {
+  async createTeamMember(
+    tenantId: string,
+    request: CreateTeamMemberRequest
+  ): Promise<TeamMember> {
     const headers = await this.getAuthHeaders();
     const response = await fetch(
       `${this.baseUrl}/api/v1/tenants/${tenantId}/team/members`,
       {
-        method: 'POST',
+        method: "POST",
         headers,
         body: JSON.stringify(request),
       }
@@ -107,12 +121,16 @@ class TeamService {
   }
 
   // Update team member
-  async updateTeamMember(tenantId: string, memberId: string, request: UpdateTeamMemberRequest): Promise<TeamMember> {
+  async updateTeamMember(
+    tenantId: string,
+    memberId: string,
+    request: UpdateTeamMemberRequest
+  ): Promise<TeamMember> {
     const headers = await this.getAuthHeaders();
     const response = await fetch(
       `${this.baseUrl}/api/v1/tenants/${tenantId}/team/members/${memberId}`,
       {
-        method: 'PUT',
+        method: "PUT",
         headers,
         body: JSON.stringify(request),
       }
@@ -126,11 +144,11 @@ class TeamService {
     const response = await fetch(
       `${this.baseUrl}/api/v1/tenants/${tenantId}/team/members/${memberId}`,
       {
-        method: 'DELETE',
+        method: "DELETE",
         headers,
       }
     );
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`API Error: ${response.status} - ${errorText}`);
@@ -143,7 +161,7 @@ class TeamService {
     const response = await fetch(
       `${this.baseUrl}/api/v1/team/invitations/${token}/accept`,
       {
-        method: 'POST',
+        method: "POST",
         headers,
       }
     );
@@ -156,11 +174,11 @@ class TeamService {
     const response = await fetch(
       `${this.baseUrl}/api/v1/team/invitations/${token}/decline`,
       {
-        method: 'POST',
+        method: "POST",
         headers,
       }
     );
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`API Error: ${response.status} - ${errorText}`);
@@ -168,12 +186,15 @@ class TeamService {
   }
 
   // Resend invitation
-  async resendInvitation(tenantId: string, invitationId: string): Promise<TeamInvitation> {
+  async resendInvitation(
+    tenantId: string,
+    invitationId: string
+  ): Promise<TeamInvitation> {
     const headers = await this.getAuthHeaders();
     const response = await fetch(
       `${this.baseUrl}/api/v1/tenants/${tenantId}/team/invitations/${invitationId}/resend`,
       {
-        method: 'POST',
+        method: "POST",
         headers,
       }
     );
@@ -181,16 +202,19 @@ class TeamService {
   }
 
   // Cancel invitation
-  async cancelInvitation(tenantId: string, invitationId: string): Promise<void> {
+  async cancelInvitation(
+    tenantId: string,
+    invitationId: string
+  ): Promise<void> {
     const headers = await this.getAuthHeaders();
     const response = await fetch(
       `${this.baseUrl}/api/v1/tenants/${tenantId}/team/invitations/${invitationId}`,
       {
-        method: 'DELETE',
+        method: "DELETE",
         headers,
       }
     );
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`API Error: ${response.status} - ${errorText}`);

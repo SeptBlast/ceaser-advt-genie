@@ -10,12 +10,12 @@ type UserRole string
 const (
 	// Global Platform Roles
 	RoleSuperAdmin UserRole = "superadmin"
-	
+
 	// Tenant-Specific Roles
 	RoleTenantAdmin    UserRole = "tenant_admin"
 	RoleTenantMarketer UserRole = "tenant_marketer"
 	RoleTenantAnalyst  UserRole = "tenant_analyst"
-	
+
 	// Basic User Role
 	RoleUser UserRole = "user"
 )
@@ -25,22 +25,22 @@ type Permission string
 
 const (
 	// Platform Management (Super Admin Only)
-	PermissionPlatformReadAllTenants     Permission = "platform:read_all_tenants"
-	PermissionPlatformCreateTenant       Permission = "platform:create_tenant"
-	PermissionPlatformDeleteTenant       Permission = "platform:delete_tenant"
+	PermissionPlatformReadAllTenants       Permission = "platform:read_all_tenants"
+	PermissionPlatformCreateTenant         Permission = "platform:create_tenant"
+	PermissionPlatformDeleteTenant         Permission = "platform:delete_tenant"
 	PermissionPlatformManageGlobalSettings Permission = "platform:manage_global_settings"
-	PermissionPlatformViewGlobalAnalytics Permission = "platform:view_global_analytics"
-	PermissionPlatformManageGlobalBilling Permission = "platform:manage_global_billing"
-	
+	PermissionPlatformViewGlobalAnalytics  Permission = "platform:view_global_analytics"
+	PermissionPlatformManageGlobalBilling  Permission = "platform:manage_global_billing"
+
 	// Tenant Management (Tenant Admin)
-	PermissionTenantReadUsers        Permission = "tenant:read_users"
-	PermissionTenantCreateUsers      Permission = "tenant:create_users"
-	PermissionTenantUpdateUsers      Permission = "tenant:update_users"
-	PermissionTenantDeleteUsers      Permission = "tenant:delete_users"
-	PermissionTenantManageRoles      Permission = "tenant:manage_roles"
-	PermissionTenantViewSettings     Permission = "tenant:view_tenant_settings"
-	PermissionTenantUpdateSettings   Permission = "tenant:update_tenant_settings"
-	
+	PermissionTenantReadUsers      Permission = "tenant:read_users"
+	PermissionTenantCreateUsers    Permission = "tenant:create_users"
+	PermissionTenantUpdateUsers    Permission = "tenant:update_users"
+	PermissionTenantDeleteUsers    Permission = "tenant:delete_users"
+	PermissionTenantManageRoles    Permission = "tenant:manage_roles"
+	PermissionTenantViewSettings   Permission = "tenant:view_tenant_settings"
+	PermissionTenantUpdateSettings Permission = "tenant:update_tenant_settings"
+
 	// Campaign Management (Marketer)
 	PermissionCampaignsRead   Permission = "campaigns:read"
 	PermissionCampaignsCreate Permission = "campaigns:create"
@@ -48,25 +48,25 @@ const (
 	PermissionCampaignsDelete Permission = "campaigns:delete"
 	PermissionCampaignsLaunch Permission = "campaigns:launch"
 	PermissionCampaignsPause  Permission = "campaigns:pause"
-	
+
 	// Creative Management (Marketer)
-	PermissionCreativesRead      Permission = "creatives:read"
-	PermissionCreativesCreate    Permission = "creatives:create"
-	PermissionCreativesUpdate    Permission = "creatives:update"
-	PermissionCreativesDelete    Permission = "creatives:delete"
+	PermissionCreativesRead       Permission = "creatives:read"
+	PermissionCreativesCreate     Permission = "creatives:create"
+	PermissionCreativesUpdate     Permission = "creatives:update"
+	PermissionCreativesDelete     Permission = "creatives:delete"
 	PermissionCreativesGenerateAI Permission = "creatives:generate_ai"
-	
+
 	// Budget Management (Marketer)
 	PermissionBudgetsRead     Permission = "budgets:read"
 	PermissionBudgetsUpdate   Permission = "budgets:update"
 	PermissionBudgetsAllocate Permission = "budgets:allocate"
-	
+
 	// Analytics & Reporting (Analyst)
 	PermissionAnalyticsReadCampaignData    Permission = "analytics:read_campaign_data"
 	PermissionAnalyticsReadPerformanceData Permission = "analytics:read_performance_data"
 	PermissionAnalyticsExportReports       Permission = "analytics:export_reports"
 	PermissionAnalyticsCreateCustomReports Permission = "analytics:create_custom_reports"
-	
+
 	// Billing Access (Analyst)
 	PermissionBillingReadInvoices           Permission = "billing:read_invoices"
 	PermissionBillingExportInvoices         Permission = "billing:export_invoices"
@@ -89,7 +89,7 @@ type EnhancedUserProfile struct {
 	UpdatedAt     time.Time              `firestore:"updated_at" json:"updated_at"`
 	LastLoginAt   *time.Time             `firestore:"last_login_at" json:"last_login_at,omitempty"`
 	Metadata      map[string]interface{} `firestore:"metadata" json:"metadata,omitempty"`
-	
+
 	// AI Model Configurations (preserved from original)
 	AIModels    map[string]interface{} `firestore:"ai_models" json:"ai_models,omitempty"`
 	MediaModels map[string]interface{} `firestore:"media_models" json:"media_models,omitempty"`
@@ -136,18 +136,18 @@ type Tenant struct {
 	ID        string    `firestore:"-" json:"id"` // Document ID
 	Name      string    `firestore:"name" json:"name"`
 	Domain    string    `firestore:"domain" json:"domain"`
-	Plan      string    `firestore:"plan" json:"plan"` // trial, starter, pro, enterprise
+	Plan      string    `firestore:"plan" json:"plan"`     // trial, starter, pro, enterprise
 	Status    string    `firestore:"status" json:"status"` // active, suspended, trial, cancelled
 	CreatedAt time.Time `firestore:"created_at" json:"created_at"`
 	UpdatedAt time.Time `firestore:"updated_at" json:"updated_at"`
-	
+
 	// Settings
 	Settings struct {
-		MaxUsers     int                    `firestore:"max_users" json:"max_users"`
-		Features     []string               `firestore:"features" json:"features"`
+		MaxUsers       int                    `firestore:"max_users" json:"max_users"`
+		Features       []string               `firestore:"features" json:"features"`
 		CustomBranding map[string]interface{} `firestore:"custom_branding" json:"custom_branding,omitempty"`
 	} `firestore:"settings" json:"settings"`
-	
+
 	// Billing Information
 	Billing struct {
 		Subscription struct {
@@ -156,19 +156,19 @@ type Tenant struct {
 			CurrentPeriodStart time.Time `firestore:"current_period_start" json:"current_period_start"`
 			CurrentPeriodEnd   time.Time `firestore:"current_period_end" json:"current_period_end"`
 		} `firestore:"subscription" json:"subscription"`
-		
+
 		Usage struct {
-			Users      int `firestore:"users" json:"users"`
-			Campaigns  int `firestore:"campaigns" json:"campaigns"`
-			Creatives  int `firestore:"creatives" json:"creatives"`
-			APICalls   int `firestore:"api_calls" json:"api_calls"`
+			Users     int `firestore:"users" json:"users"`
+			Campaigns int `firestore:"campaigns" json:"campaigns"`
+			Creatives int `firestore:"creatives" json:"creatives"`
+			APICalls  int `firestore:"api_calls" json:"api_calls"`
 		} `firestore:"usage" json:"usage"`
-		
+
 		Limits struct {
-			MaxUsers      int `firestore:"max_users" json:"max_users"`
-			MaxCampaigns  int `firestore:"max_campaigns" json:"max_campaigns"`
-			MaxCreatives  int `firestore:"max_creatives" json:"max_creatives"`
-			MaxAPICalls   int `firestore:"max_api_calls" json:"max_api_calls"`
+			MaxUsers     int `firestore:"max_users" json:"max_users"`
+			MaxCampaigns int `firestore:"max_campaigns" json:"max_campaigns"`
+			MaxCreatives int `firestore:"max_creatives" json:"max_creatives"`
+			MaxAPICalls  int `firestore:"max_api_calls" json:"max_api_calls"`
 		} `firestore:"limits" json:"limits"`
 	} `firestore:"billing" json:"billing"`
 }
@@ -356,7 +356,7 @@ func (r UserRole) HasPermission(permission Permission) bool {
 	if !exists {
 		return false
 	}
-	
+
 	for _, p := range permissions {
 		if p == permission {
 			return true
@@ -399,12 +399,12 @@ func (r UserRole) CanManageRole(targetRole UserRole) bool {
 	if !exists {
 		return false
 	}
-	
+
 	targetLevel, exists := RoleHierarchy[targetRole]
 	if !exists {
 		return false
 	}
-	
+
 	return managerLevel > targetLevel
 }
 

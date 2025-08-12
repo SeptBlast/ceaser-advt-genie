@@ -1,156 +1,156 @@
 // Enhanced Role-Based Access Control (RBAC) Types for Multi-Tenant SaaS Platform
 
 // Global Platform Roles
-export type GlobalRole = 'superadmin';
+export type GlobalRole = "superadmin";
 
 // Tenant-Specific Roles
-export type TenantRole = 'tenant_admin' | 'tenant_marketer' | 'tenant_analyst';
+export type TenantRole = "tenant_admin" | "tenant_marketer" | "tenant_analyst";
 
 // Combined Role Type
-export type UserRole = GlobalRole | TenantRole | 'user';
+export type UserRole = GlobalRole | TenantRole | "user";
 
 // Permission Categories
-export type PermissionCategory = 
-  | 'platform_management'    // Super admin permissions
-  | 'tenant_management'     // Tenant admin permissions
-  | 'campaign_management'   // Marketer permissions
-  | 'creative_management'   // Marketer permissions
-  | 'budget_management'     // Marketer permissions
-  | 'analytics_access'      // Analyst permissions
-  | 'reporting_access'      // Analyst permissions
-  | 'billing_access'        // Analyst permissions
-  | 'user_management';      // Tenant admin permissions
+export type PermissionCategory =
+  | "platform_management" // Super admin permissions
+  | "tenant_management" // Tenant admin permissions
+  | "campaign_management" // Marketer permissions
+  | "creative_management" // Marketer permissions
+  | "budget_management" // Marketer permissions
+  | "analytics_access" // Analyst permissions
+  | "reporting_access" // Analyst permissions
+  | "billing_access" // Analyst permissions
+  | "user_management"; // Tenant admin permissions
 
 // Specific Permissions
-export type Permission = 
+export type Permission =
   // Platform Management (Super Admin Only)
-  | 'platform:read_all_tenants'
-  | 'platform:create_tenant'
-  | 'platform:delete_tenant'
-  | 'platform:manage_global_settings'
-  | 'platform:view_global_analytics'
-  | 'platform:manage_global_billing'
-  
+  | "platform:read_all_tenants"
+  | "platform:create_tenant"
+  | "platform:delete_tenant"
+  | "platform:manage_global_settings"
+  | "platform:view_global_analytics"
+  | "platform:manage_global_billing"
+
   // Tenant Management (Tenant Admin)
-  | 'tenant:read_users'
-  | 'tenant:create_users'
-  | 'tenant:update_users'
-  | 'tenant:delete_users'
-  | 'tenant:manage_roles'
-  | 'tenant:view_tenant_settings'
-  | 'tenant:update_tenant_settings'
-  
+  | "tenant:read_users"
+  | "tenant:create_users"
+  | "tenant:update_users"
+  | "tenant:delete_users"
+  | "tenant:manage_roles"
+  | "tenant:view_tenant_settings"
+  | "tenant:update_tenant_settings"
+
   // Campaign Management (Marketer)
-  | 'campaigns:read'
-  | 'campaigns:create'
-  | 'campaigns:update'
-  | 'campaigns:delete'
-  | 'campaigns:launch'
-  | 'campaigns:pause'
-  
+  | "campaigns:read"
+  | "campaigns:create"
+  | "campaigns:update"
+  | "campaigns:delete"
+  | "campaigns:launch"
+  | "campaigns:pause"
+
   // Creative Management (Marketer)
-  | 'creatives:read'
-  | 'creatives:create'
-  | 'creatives:update'
-  | 'creatives:delete'
-  | 'creatives:generate_ai'
-  
+  | "creatives:read"
+  | "creatives:create"
+  | "creatives:update"
+  | "creatives:delete"
+  | "creatives:generate_ai"
+
   // Budget Management (Marketer)
-  | 'budgets:read'
-  | 'budgets:update'
-  | 'budgets:allocate'
-  
+  | "budgets:read"
+  | "budgets:update"
+  | "budgets:allocate"
+
   // Analytics & Reporting (Analyst)
-  | 'analytics:read_campaign_data'
-  | 'analytics:read_performance_data'
-  | 'analytics:export_reports'
-  | 'analytics:create_custom_reports'
-  
+  | "analytics:read_campaign_data"
+  | "analytics:read_performance_data"
+  | "analytics:export_reports"
+  | "analytics:create_custom_reports"
+
   // Billing Access (Analyst)
-  | 'billing:read_invoices'
-  | 'billing:export_invoices'
-  | 'billing:view_usage_data'
-  | 'billing:generate_billing_reports';
+  | "billing:read_invoices"
+  | "billing:export_invoices"
+  | "billing:view_usage_data"
+  | "billing:generate_billing_reports";
 
 // Role Permission Mapping
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   // Super Admin - Global platform access
   superadmin: [
-    'platform:read_all_tenants',
-    'platform:create_tenant',
-    'platform:delete_tenant',
-    'platform:manage_global_settings',
-    'platform:view_global_analytics',
-    'platform:manage_global_billing',
+    "platform:read_all_tenants",
+    "platform:create_tenant",
+    "platform:delete_tenant",
+    "platform:manage_global_settings",
+    "platform:view_global_analytics",
+    "platform:manage_global_billing",
   ],
-  
+
   // Tenant Admin - Full tenant management
   tenant_admin: [
-    'tenant:read_users',
-    'tenant:create_users',
-    'tenant:update_users',
-    'tenant:delete_users',
-    'tenant:manage_roles',
-    'tenant:view_tenant_settings',
-    'tenant:update_tenant_settings',
-    'campaigns:read',
-    'campaigns:create',
-    'campaigns:update',
-    'campaigns:delete',
-    'campaigns:launch',
-    'campaigns:pause',
-    'creatives:read',
-    'creatives:create',
-    'creatives:update',
-    'creatives:delete',
-    'creatives:generate_ai',
-    'budgets:read',
-    'budgets:update',
-    'budgets:allocate',
-    'analytics:read_campaign_data',
-    'analytics:read_performance_data',
-    'analytics:export_reports',
-    'analytics:create_custom_reports',
-    'billing:read_invoices',
-    'billing:export_invoices',
-    'billing:view_usage_data',
-    'billing:generate_billing_reports',
+    "tenant:read_users",
+    "tenant:create_users",
+    "tenant:update_users",
+    "tenant:delete_users",
+    "tenant:manage_roles",
+    "tenant:view_tenant_settings",
+    "tenant:update_tenant_settings",
+    "campaigns:read",
+    "campaigns:create",
+    "campaigns:update",
+    "campaigns:delete",
+    "campaigns:launch",
+    "campaigns:pause",
+    "creatives:read",
+    "creatives:create",
+    "creatives:update",
+    "creatives:delete",
+    "creatives:generate_ai",
+    "budgets:read",
+    "budgets:update",
+    "budgets:allocate",
+    "analytics:read_campaign_data",
+    "analytics:read_performance_data",
+    "analytics:export_reports",
+    "analytics:create_custom_reports",
+    "billing:read_invoices",
+    "billing:export_invoices",
+    "billing:view_usage_data",
+    "billing:generate_billing_reports",
   ],
-  
+
   // Tenant Marketer - Campaign and creative management
   tenant_marketer: [
-    'campaigns:read',
-    'campaigns:create',
-    'campaigns:update',
-    'campaigns:delete',
-    'campaigns:launch',
-    'campaigns:pause',
-    'creatives:read',
-    'creatives:create',
-    'creatives:update',
-    'creatives:delete',
-    'creatives:generate_ai',
-    'budgets:read',
-    'budgets:update',
-    'budgets:allocate',
-    'analytics:read_campaign_data',
-    'analytics:read_performance_data',
+    "campaigns:read",
+    "campaigns:create",
+    "campaigns:update",
+    "campaigns:delete",
+    "campaigns:launch",
+    "campaigns:pause",
+    "creatives:read",
+    "creatives:create",
+    "creatives:update",
+    "creatives:delete",
+    "creatives:generate_ai",
+    "budgets:read",
+    "budgets:update",
+    "budgets:allocate",
+    "analytics:read_campaign_data",
+    "analytics:read_performance_data",
   ],
-  
+
   // Tenant Analyst - Analytics, reporting, and billing
   tenant_analyst: [
-    'campaigns:read',
-    'creatives:read',
-    'analytics:read_campaign_data',
-    'analytics:read_performance_data',
-    'analytics:export_reports',
-    'analytics:create_custom_reports',
-    'billing:read_invoices',
-    'billing:export_invoices',
-    'billing:view_usage_data',
-    'billing:generate_billing_reports',
+    "campaigns:read",
+    "creatives:read",
+    "analytics:read_campaign_data",
+    "analytics:read_performance_data",
+    "analytics:export_reports",
+    "analytics:create_custom_reports",
+    "billing:read_invoices",
+    "billing:export_invoices",
+    "billing:view_usage_data",
+    "billing:generate_billing_reports",
   ],
-  
+
   // Regular User - Basic access
   user: [],
 };
@@ -204,8 +204,9 @@ export interface TeamInvitation {
   invitedBy: string;
   invitedAt: string;
   expiresAt: string;
-  status: 'pending' | 'accepted' | 'expired' | 'revoked';
+  status: "pending" | "accepted" | "declined" | "expired" | "revoked";
   token: string;
+  message?: string; // Optional personal message from inviter
 }
 
 // Enhanced Tenant Interface
@@ -213,8 +214,8 @@ export interface Tenant {
   id: string;
   name: string;
   domain: string;
-  plan: 'trial' | 'starter' | 'pro' | 'enterprise';
-  status: 'active' | 'suspended' | 'trial' | 'cancelled';
+  plan: "trial" | "starter" | "pro" | "enterprise";
+  status: "active" | "suspended" | "trial" | "cancelled";
   settings: {
     maxUsers: number;
     features: string[];
@@ -258,16 +259,20 @@ export interface PermissionCheckResult {
 export const TEAM_MANAGEMENT_ENDPOINTS = {
   // Team Members
   TEAM_MEMBERS: (tenantId: string) => `/api/v1/tenants/${tenantId}/team`,
-  TEAM_MEMBER_BY_ID: (tenantId: string, memberId: string) => `/api/v1/tenants/${tenantId}/team/${memberId}`,
-  
+  TEAM_MEMBER_BY_ID: (tenantId: string, memberId: string) =>
+    `/api/v1/tenants/${tenantId}/team/${memberId}`,
+
   // Invitations
-  TEAM_INVITATIONS: (tenantId: string) => `/api/v1/tenants/${tenantId}/invitations`,
-  TEAM_INVITATION_BY_ID: (tenantId: string, invitationId: string) => `/api/v1/tenants/${tenantId}/invitations/${invitationId}`,
+  TEAM_INVITATIONS: (tenantId: string) =>
+    `/api/v1/tenants/${tenantId}/invitations`,
+  TEAM_INVITATION_BY_ID: (tenantId: string, invitationId: string) =>
+    `/api/v1/tenants/${tenantId}/invitations/${invitationId}`,
   ACCEPT_INVITATION: (token: string) => `/api/v1/invitations/${token}/accept`,
-  
+
   // Role Management
-  UPDATE_MEMBER_ROLE: (tenantId: string, memberId: string) => `/api/v1/tenants/${tenantId}/team/${memberId}/role`,
-  
+  UPDATE_MEMBER_ROLE: (tenantId: string, memberId: string) =>
+    `/api/v1/tenants/${tenantId}/team/${memberId}/role`,
+
   // Permissions
   CHECK_PERMISSION: `/api/v1/permissions/check`,
   USER_PERMISSIONS: `/api/v1/permissions/user`,
@@ -321,7 +326,10 @@ export interface BulkRoleUpdateRequest {
 }
 
 // Utility function to check if user has permission
-export function hasPermission(userRole: UserRole, permission: Permission): boolean {
+export function hasPermission(
+  userRole: UserRole,
+  permission: Permission
+): boolean {
   const rolePermissions = ROLE_PERMISSIONS[userRole] || [];
   return rolePermissions.includes(permission);
 }
@@ -333,12 +341,14 @@ export function getRolePermissions(role: UserRole): Permission[] {
 
 // Utility function to check if role is tenant-specific
 export function isTenantRole(role: UserRole): role is TenantRole {
-  return ['tenant_admin', 'tenant_marketer', 'tenant_analyst'].includes(role as TenantRole);
+  return ["tenant_admin", "tenant_marketer", "tenant_analyst"].includes(
+    role as TenantRole
+  );
 }
 
 // Utility function to check if role is global
 export function isGlobalRole(role: UserRole): role is GlobalRole {
-  return role === 'superadmin';
+  return role === "superadmin";
 }
 
 // Role hierarchy levels (higher number = more permissions)
@@ -351,6 +361,9 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
 };
 
 // Check if one role can manage another role
-export function canManageRole(managerRole: UserRole, targetRole: UserRole): boolean {
+export function canManageRole(
+  managerRole: UserRole,
+  targetRole: UserRole
+): boolean {
   return ROLE_HIERARCHY[managerRole] > ROLE_HIERARCHY[targetRole];
 }

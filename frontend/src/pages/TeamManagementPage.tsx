@@ -92,9 +92,23 @@ const TeamManagementPage: React.FC<TeamManagementPageProps> = ({ tenantId }) => 
   const loadTeamData = async () => {
     setLoading(true);
     try {
-      // Load team members and invitations
-      // These would be API calls to your backend
-      // For now, using mock data
+      if (!currentTenantId) {
+        throw new Error('No tenant ID available');
+      }
+
+      // Load team members and invitations from API
+      const [membersResponse, invitationsResponse] = await Promise.all([
+        teamService.getTeamMembers(currentTenantId),
+        teamService.getTeamInvitations(currentTenantId),
+      ]);
+
+      setTeamMembers(membersResponse.members);
+      setInvitations(invitationsResponse.invitations);
+    } catch (err) {
+      setError('Failed to load team data');
+      console.error('Error loading team data:', err);
+      
+      // Fallback to mock data for development
       const mockMembers: TeamMember[] = [
         {
           id: '1',
@@ -165,9 +179,6 @@ const TeamManagementPage: React.FC<TeamManagementPageProps> = ({ tenantId }) => 
 
       setTeamMembers(mockMembers);
       setInvitations(mockInvitations);
-    } catch (err) {
-      setError('Failed to load team data');
-      console.error('Error loading team data:', err);
     } finally {
       setLoading(false);
     }
@@ -175,8 +186,17 @@ const TeamManagementPage: React.FC<TeamManagementPageProps> = ({ tenantId }) => 
 
   const handleInviteSubmit = async () => {
     try {
-      // API call to invite team member
-      console.log('Inviting member:', inviteForm);
+      if (!currentTenantId) {
+        throw new Error('No tenant ID available');
+      }
+
+      const request: InviteTeamMemberRequest = {
+        email: inviteForm.email,
+        role: inviteForm.role,
+        message: inviteForm.message || undefined,
+      };
+
+      await teamService.inviteTeamMember(currentTenantId, request);
       
       // Reset form and close dialog
       setInviteForm({ email: '', role: 'tenant_marketer', message: '' });
@@ -186,15 +206,22 @@ const TeamManagementPage: React.FC<TeamManagementPageProps> = ({ tenantId }) => 
       await loadTeamData();
     } catch (err) {
       setError('Failed to send invitation');
+      console.error('Error sending invitation:', err);
     }
   };
 
   const handleEditSubmit = async () => {
-    if (!selectedMember) return;
+    if (!selectedMember || !currentTenantId) return;
     
     try {
-      // API call to update team member
-      console.log('Updating member:', selectedMember.id, editForm);
+      const request: UpdateTeamMemberRequest = {
+        role: editForm.role,
+        isActive: editForm.isActive,
+        department: editForm.department || undefined,
+        jobTitle: editForm.jobTitle || undefined,
+      };
+
+      await teamService.updateTeamMember(currentTenantId, selectedMember.id, request);
       
       // Reset form and close dialog
       setEditMemberDialogOpen(false);
@@ -204,19 +231,22 @@ const TeamManagementPage: React.FC<TeamManagementPageProps> = ({ tenantId }) => 
       await loadTeamData();
     } catch (err) {
       setError('Failed to update team member');
+      console.error('Error updating team member:', err);
     }
   };
 
   const handleDeleteMember = async (memberId: string) => {
+    if (!currentTenantId) return;
+    
     if (window.confirm('Are you sure you want to remove this team member?')) {
       try {
-        // API call to delete team member
-        console.log('Deleting member:', memberId);
+        await teamService.removeTeamMember(currentTenantId, memberId);
         
         // Reload data
         await loadTeamData();
       } catch (err) {
         setError('Failed to remove team member');
+        console.error('Error removing team member:', err);
       }
     }
   };

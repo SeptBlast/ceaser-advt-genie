@@ -23,6 +23,7 @@ import BillingPage from './pages/BillingPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import TeamManagementPage from './pages/TeamManagementPage';
+import TeamInvitationPage from './pages/TeamInvitationPage';
 
 // Admin Pages
 import {
@@ -46,6 +47,9 @@ const App: React.FC = () => {
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
+            
+            {/* Team invitation route - publicly accessible but requires auth to accept */}
+            <Route path="/team/invitation/:token" element={<TeamInvitationPage />} />
             
             {/* Protected routes */}
             <Route path="/dashboard" element={
