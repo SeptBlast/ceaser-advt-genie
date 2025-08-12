@@ -43,6 +43,7 @@ import { useAppStore } from '../store/appStore';
 import { useThemeMode } from '../ThemeProvider';
 import { useAuth } from '../contexts/AuthContext';
 import { useHealth } from '../hooks/useApi';
+import ThemeAwareLogo from './ThemeAwareLogo';
 
 const drawerWidth = 280;
 
@@ -128,14 +129,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Logo and Tenant Info */}
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <img 
-            src="/assets/logo.svg" 
-            alt="AdGenius Logo" 
-            style={{ 
-              width: 32, 
-              height: 32, 
-              marginRight: 8 
-            }} 
+          <ThemeAwareLogo
+            width={32}
+            height={32}
+            style={{ marginRight: 8 }}
           />
           <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
             AdGenius

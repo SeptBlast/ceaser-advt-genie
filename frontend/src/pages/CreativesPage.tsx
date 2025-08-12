@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -52,14 +52,26 @@ const CreativesPage: React.FC = () => {
     loading, 
     fetchCreatives, 
     fetchCampaigns,
-    deleteCreative 
+    deleteCreative,
+    campaigns,
+    generateCreativeWithAI
   } = useAppStore();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedCreative, setSelectedCreative] = React.useState<any>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [generateDialogOpen, setGenerateDialogOpen] = React.useState(false);
-  const [selectedCampaign, setSelectedCampaign] = React.useState('');
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState('');
+  const [selectedModel, setSelectedModel] = useState('');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [creativeType, setCreativeType] = useState('video');
+  const [generating, setGenerating] = useState(false);
+  // Example: Replace with actual available models from backend/config
+  const availableModels = [
+    { value: 'openai-gpt4-video', label: 'OpenAI GPT-4 Video' },
+    { value: 'google-palm2-video', label: 'Google PaLM2 Video' },
+    { value: 'stability-ai-video', label: 'Stability AI Video' },
+  ];
 
   React.useEffect(() => {
     fetchCreatives();
@@ -226,6 +238,28 @@ const CreativesPage: React.FC = () => {
 
   const displayCreatives = creatives.length > 0 ? creatives : mockCreatives;
 
+  // Handle AI Creative Generation
+  const handleGenerateCreative = async () => {
+    if (!selectedCampaign || !creativeType || !aiPrompt || !selectedModel) return;
+    setGenerating(true);
+    try {
+      await generateCreativeWithAI({
+        campaignId: selectedCampaign,
+        type: creativeType,
+        prompt: aiPrompt,
+        model: selectedModel,
+      });
+      setGenerateDialogOpen(false);
+      setAiPrompt('');
+      setSelectedModel('');
+      setCreativeType('video');
+    } catch (e) {
+      // Optionally show error
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <Box>
       {/* Header */}
@@ -349,7 +383,21 @@ const CreativesPage: React.FC = () => {
               >
                 {/* Creative Preview */}
                 <Box sx={{ position: 'relative' }}>
-                  {creative.content.imageUrl || creative.content.thumbnailUrl ? (
+                  {/* Show video if S3 or provider video URL exists */}
+                  {creative.type === 'video' && ((creative.content as any).s3VideoUrl || creative.content.videoUrl || (creative.content as any).providerVideoUrl) ? (
+                    <video
+                      height="200"
+                      width="100%"
+                      controls
+                      poster={creative.content.thumbnailUrl || creative.content.imageUrl}
+                      style={{ objectFit: 'cover', maxHeight: 200 }}
+                    >
+                      {(creative.content as any).s3VideoUrl && <source src={(creative.content as any).s3VideoUrl} type="video/mp4" />}
+                      {(creative.content as any).providerVideoUrl && <source src={(creative.content as any).providerVideoUrl} type="video/mp4" />}
+                      {creative.content.videoUrl && <source src={creative.content.videoUrl} type="video/mp4" />}
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : creative.content.imageUrl || creative.content.thumbnailUrl ? (
                     <CardMedia
                       component="img"
                       height="200"
@@ -375,7 +423,7 @@ const CreativesPage: React.FC = () => {
                       </Typography>
                     </Box>
                   )}
-                  
+
                   {/* Type & AI Badge */}
                   <Box sx={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 1 }}>
                     <Chip
@@ -409,7 +457,7 @@ const CreativesPage: React.FC = () => {
                 <CardContent>
                   {/* Campaign info */}
                   <Typography variant="caption" color="textSecondary" sx={{ mb: 1, display: 'block' }}>
-                    {creative.campaignName || 'Unknown Campaign'}
+                    {'campaignName' in creative ? (creative as any).campaignName : (campaigns?.find(c => c.id === creative.campaignId)?.name || 'Unknown Campaign')}
                   </Typography>
 
                   {/* Headline */}
@@ -553,10 +601,8 @@ const CreativesPage: React.FC = () => {
                   onChange={(e) => setSelectedCampaign(e.target.value)}
                   label="Campaign"
                 >
-                  {mockCreatives.map((creative) => (
-                    <MenuItem key={creative.campaignId} value={creative.campaignId}>
-                      {creative.campaignName}
-                    </MenuItem>
+                  {campaigns && campaigns.map((c: any) => (
+                    <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -564,11 +610,29 @@ const CreativesPage: React.FC = () => {
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <InputLabel>Creative Type</InputLabel>
-                <Select label="Creative Type">
+                <Select
+                  value={creativeType}
+                  label="Creative Type"
+                  onChange={(e) => setCreativeType(e.target.value)}
+                >
                   <MenuItem value="image">Image</MenuItem>
                   <MenuItem value="video">Video</MenuItem>
                   <MenuItem value="carousel">Carousel</MenuItem>
                   <MenuItem value="text">Text</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel>Model</InputLabel>
+                <Select
+                  value={selectedModel}
+                  label="Model"
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                >
+                  {availableModels.map((m) => (
+                    <MenuItem key={m.value} value={m.value}>{m.label}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -579,14 +643,21 @@ const CreativesPage: React.FC = () => {
                 multiline
                 rows={4}
                 placeholder="Describe the creative you want to generate..."
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
               />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setGenerateDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" startIcon={<AutoAwesome />}>
-            Generate
+          <Button onClick={() => setGenerateDialogOpen(false)} disabled={generating}>Cancel</Button>
+          <Button
+            variant="contained"
+            startIcon={<AutoAwesome />}
+            onClick={handleGenerateCreative}
+            disabled={generating || !selectedCampaign || !creativeType || !aiPrompt || !selectedModel}
+          >
+            {generating ? 'Generating...' : 'Generate'}
           </Button>
         </DialogActions>
       </Dialog>

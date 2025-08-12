@@ -110,3 +110,25 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* Theme-aware logo styles */
+.theme-aware-logo {
+  transition: filter 0.3s ease-in-out;
+  filter: none; /* Default for light theme */
+}
+
+[data-theme="dark"] .theme-aware-logo {
+  filter: invert(1) brightness(1); /* Convert black to white in dark mode */
+}
+
+/* Alternative approach for specific logo elements */
+img[src*="logo.svg"].theme-responsive,
+.logo-adaptive {
+  transition: filter 0.3s ease-in-out;
+  filter: none;
+}
+
+[data-theme="dark"] img[src*="logo.svg"].theme-responsive,
+[data-theme="dark"] .logo-adaptive {
+  filter: invert(1) brightness(1);
+}

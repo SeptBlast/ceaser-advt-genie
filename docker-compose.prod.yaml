@@ -37,6 +37,19 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
 
+      # Video Generation Provider API Keys (Optional)
+      RUNWAY_API_KEY: ${RUNWAY_API_KEY:-}
+      PIKA_API_KEY: ${PIKA_API_KEY:-}
+      STABILITY_API_KEY: ${STABILITY_API_KEY:-}
+      LUMA_API_KEY: ${LUMA_API_KEY:-}
+
+      # AWS S3 Configuration for video storage
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_VIDEO_PREFIX: ${S3_VIDEO_PREFIX:-videos}
+
       # Remote Redis Configuration (no local Redis service needed)
       REDIS_URL: ${REDIS_URL}
 

@@ -27,6 +27,7 @@ import {
   Person,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import ThemeAwareLogo from '../components/ThemeAwareLogo';
 
 const SignUpPage: React.FC = () => {
   const theme = useTheme();
@@ -178,14 +179,10 @@ const SignUpPage: React.FC = () => {
                 mb: 2,
               }}
             >
-              <img 
-                src="/assets/logo.svg" 
-                alt="AdGenius Logo" 
-                style={{ 
-                  width: 60, 
-                  height: 60,
-                  filter: 'brightness(0) invert(1)' // Make logo white
-                }} 
+              <ThemeAwareLogo
+                width={60}
+                height={60}
+                style={{ filter: 'brightness(0) invert(1)' }} // Force white on gradient background
               />
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>

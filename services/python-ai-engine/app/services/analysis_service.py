@@ -16,7 +16,7 @@ class AnalysisService:
     Service for AI-powered campaign analysis and performance evaluation.
     Uses advanced LangChain capabilities for data interpretation and insights.
     """
-    
+
     def __init__(self):
         self.llm = self._init_llm()
         self.analysis_prompts = {
@@ -24,7 +24,7 @@ class AnalysisService:
             "audience": self._get_audience_analysis_prompt(),
             "creative": self._get_creative_analysis_prompt(),
             "competitive": self._get_competitive_analysis_prompt(),
-            "optimization": self._get_optimization_analysis_prompt()
+            "optimization": self._get_optimization_analysis_prompt(),
         }
         logger.info("AnalysisService initialized")
 
@@ -36,7 +36,7 @@ class AnalysisService:
                 api_key=api_key,
                 model="gpt-4o",  # Use more capable model for analysis
                 temperature=0.3,  # Lower temperature for more consistent analysis
-                max_tokens=3000
+                max_tokens=3000,
             )
         # Fallback to Gemini if available
         google_key = os.getenv("GOOGLE_API_KEY")
@@ -45,7 +45,7 @@ class AnalysisService:
                 model="gemini-1.5-pro",
                 google_api_key=google_key,
                 temperature=0.3,
-                max_output_tokens=3000
+                max_output_tokens=3000,
             )
         return None
 
@@ -98,8 +98,14 @@ class AnalysisService:
         Include confidence scores for your recommendations (0-100%).
         """
         return PromptTemplate(
-            input_variables=["campaign_id", "time_period", "metrics_data", "campaign_context", "filters"],
-            template=template
+            input_variables=[
+                "campaign_id",
+                "time_period",
+                "metrics_data",
+                "campaign_context",
+                "filters",
+            ],
+            template=template,
         )
 
     def _get_audience_analysis_prompt(self) -> PromptTemplate:
@@ -137,8 +143,13 @@ class AnalysisService:
         Provide actionable recommendations with confidence scores.
         """
         return PromptTemplate(
-            input_variables=["campaign_id", "audience_data", "performance_metrics", "campaign_context"],
-            template=template
+            input_variables=[
+                "campaign_id",
+                "audience_data",
+                "performance_metrics",
+                "campaign_context",
+            ],
+            template=template,
         )
 
     def _get_creative_analysis_prompt(self) -> PromptTemplate:
@@ -176,8 +187,13 @@ class AnalysisService:
         Include confidence scores and statistical significance levels.
         """
         return PromptTemplate(
-            input_variables=["campaign_id", "creative_data", "performance_metrics", "ab_test_data"],
-            template=template
+            input_variables=[
+                "campaign_id",
+                "creative_data",
+                "performance_metrics",
+                "ab_test_data",
+            ],
+            template=template,
         )
 
     def _get_competitive_analysis_prompt(self) -> PromptTemplate:
@@ -215,8 +231,13 @@ class AnalysisService:
         Focus on actionable intelligence with confidence assessments.
         """
         return PromptTemplate(
-            input_variables=["campaign_id", "industry", "competitive_data", "market_trends"],
-            template=template
+            input_variables=[
+                "campaign_id",
+                "industry",
+                "competitive_data",
+                "market_trends",
+            ],
+            template=template,
         )
 
     def _get_optimization_analysis_prompt(self) -> PromptTemplate:
@@ -254,8 +275,13 @@ class AnalysisService:
         Prioritize recommendations by impact and effort required.
         """
         return PromptTemplate(
-            input_variables=["campaign_id", "current_performance", "historical_data", "optimization_goals"],
-            template=template
+            input_variables=[
+                "campaign_id",
+                "current_performance",
+                "historical_data",
+                "optimization_goals",
+            ],
+            template=template,
         )
 
     async def analyze_campaign(
@@ -263,17 +289,19 @@ class AnalysisService:
         campaign_id: str,
         metrics: List[str],
         analysis_type: str,
-        filters: Dict[str, Any]
+        filters: Dict[str, Any],
     ) -> Dict[str, Any]:
         """
         Perform comprehensive campaign analysis using AI models.
         Leverages Python's advanced analytics capabilities.
         """
         try:
-            logger.info("Starting campaign analysis",
-                       campaign_id=campaign_id,
-                       analysis_type=analysis_type,
-                       metrics=metrics)
+            logger.info(
+                "Starting campaign analysis",
+                campaign_id=campaign_id,
+                analysis_type=analysis_type,
+                metrics=metrics,
+            )
 
             if not self.llm:
                 raise ValueError("No LLM available for analysis")
@@ -282,13 +310,17 @@ class AnalysisService:
                 raise ValueError(f"Unsupported analysis type: {analysis_type}")
 
             # Simulate fetching campaign data (in real implementation, this would connect to databases)
-            campaign_data = await self._fetch_campaign_data(campaign_id, metrics, filters)
-            
+            campaign_data = await self._fetch_campaign_data(
+                campaign_id, metrics, filters
+            )
+
             # Get appropriate prompt
             prompt_template = self.analysis_prompts[analysis_type]
-            
+
             # Create analysis chain
-            analysis_chain = LLMChain(llm=self.llm, prompt=prompt_template, verbose=True)
+            analysis_chain = LLMChain(
+                llm=self.llm, prompt=prompt_template, verbose=True
+            )
 
             # Prepare input based on analysis type
             if analysis_type == "performance":
@@ -297,74 +329,98 @@ class AnalysisService:
                     "time_period": filters.get("time_period", "last_30_days"),
                     "metrics_data": json.dumps(campaign_data["metrics"], indent=2),
                     "campaign_context": json.dumps(campaign_data["context"], indent=2),
-                    "filters": json.dumps(filters, indent=2)
+                    "filters": json.dumps(filters, indent=2),
                 }
             elif analysis_type == "audience":
                 input_vars = {
                     "campaign_id": campaign_id,
                     "audience_data": json.dumps(campaign_data["audience"], indent=2),
-                    "performance_metrics": json.dumps(campaign_data["metrics"], indent=2),
-                    "campaign_context": json.dumps(campaign_data["context"], indent=2)
+                    "performance_metrics": json.dumps(
+                        campaign_data["metrics"], indent=2
+                    ),
+                    "campaign_context": json.dumps(campaign_data["context"], indent=2),
                 }
             elif analysis_type == "creative":
                 input_vars = {
                     "campaign_id": campaign_id,
                     "creative_data": json.dumps(campaign_data["creatives"], indent=2),
-                    "performance_metrics": json.dumps(campaign_data["metrics"], indent=2),
-                    "ab_test_data": json.dumps(campaign_data.get("ab_tests", {}), indent=2)
+                    "performance_metrics": json.dumps(
+                        campaign_data["metrics"], indent=2
+                    ),
+                    "ab_test_data": json.dumps(
+                        campaign_data.get("ab_tests", {}), indent=2
+                    ),
                 }
             else:
                 # Default input structure
                 input_vars = {
                     "campaign_id": campaign_id,
-                    "current_performance": json.dumps(campaign_data["metrics"], indent=2),
-                    "historical_data": json.dumps(campaign_data.get("historical", {}), indent=2),
-                    "optimization_goals": json.dumps(filters.get("goals", {}), indent=2)
+                    "current_performance": json.dumps(
+                        campaign_data["metrics"], indent=2
+                    ),
+                    "historical_data": json.dumps(
+                        campaign_data.get("historical", {}), indent=2
+                    ),
+                    "optimization_goals": json.dumps(
+                        filters.get("goals", {}), indent=2
+                    ),
                 }
 
             # Execute analysis
             analysis_result = await analysis_chain.arun(**input_vars)
 
             # Generate recommendations
-            recommendations = await self._generate_recommendations(campaign_id, analysis_type, analysis_result)
+            recommendations = await self._generate_recommendations(
+                campaign_id, analysis_type, analysis_result
+            )
 
             response = {
                 "success": True,
                 "message": f"Campaign analysis completed for {analysis_type}",
                 "analysis": {
                     "analysis_id": f"analysis_{campaign_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                    "summary": analysis_result[:500] + "..." if len(analysis_result) > 500 else analysis_result,
+                    "summary": (
+                        analysis_result[:500] + "..."
+                        if len(analysis_result) > 500
+                        else analysis_result
+                    ),
                     "full_analysis": analysis_result,
                     "metrics": campaign_data["metrics"],
                     "insights": [
                         "Performance is trending upward in the last 7 days",
                         "Mobile traffic shows higher engagement rates",
-                        "Creative fatigue detected in primary ad set"
+                        "Creative fatigue detected in primary ad set",
                     ],
-                    "confidence_score": "85%"
+                    "confidence_score": "85%",
                 },
-                "recommendations": recommendations
+                "recommendations": recommendations,
             }
 
-            logger.info("Campaign analysis completed successfully",
-                       campaign_id=campaign_id,
-                       analysis_type=analysis_type)
+            logger.info(
+                "Campaign analysis completed successfully",
+                campaign_id=campaign_id,
+                analysis_type=analysis_type,
+            )
 
             return response
 
         except Exception as e:
-            logger.error("Campaign analysis failed",
-                        error=str(e),
-                        campaign_id=campaign_id,
-                        analysis_type=analysis_type)
+            logger.error(
+                "Campaign analysis failed",
+                error=str(e),
+                campaign_id=campaign_id,
+                analysis_type=analysis_type,
+            )
             return {
                 "success": False,
                 "message": f"Analysis failed: {str(e)}",
                 "analysis": {},
-                "recommendations": []
+                "recommendations": [],
             }
 
-    async def _fetch_campaign_data(self, campaign_id: str, metrics: List[str], filters: Dict[str, Any]) -> Dict[str, Any]:
+    async def _fetch_campaign_data(
+        self, campaign_id: str, metrics: List[str], filters: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Simulate fetching campaign data (replace with actual database queries)"""
         # In production, this would fetch real data from MongoDB, analytics APIs, etc.
         return {
@@ -376,27 +432,29 @@ class AnalysisService:
                 "conversion_rate": 5.69,
                 "cost_per_click": 1.25,
                 "roas": 4.2,
-                "spend": 4062.50
+                "spend": 4062.50,
             },
             "context": {
                 "campaign_name": "Q4 Product Launch",
                 "platforms": ["facebook", "google_ads"],
                 "target_audience": {"age": "25-45", "interests": ["technology"]},
-                "duration_days": 14
+                "duration_days": 14,
             },
             "audience": {
                 "segments": {
                     "tech_professionals": {"performance": 8.2, "volume": 45000},
-                    "young_professionals": {"performance": 6.8, "volume": 32000}
+                    "young_professionals": {"performance": 6.8, "volume": 32000},
                 }
             },
             "creatives": {
                 "video_001": {"ctr": 3.2, "impressions": 45000},
-                "image_002": {"ctr": 2.1, "impressions": 38080}
-            }
+                "image_002": {"ctr": 2.1, "impressions": 38080},
+            },
         }
 
-    async def _generate_recommendations(self, campaign_id: str, analysis_type: str, analysis: str) -> List[Dict[str, Any]]:
+    async def _generate_recommendations(
+        self, campaign_id: str, analysis_type: str, analysis: str
+    ) -> List[Dict[str, Any]]:
         """Generate actionable recommendations based on analysis"""
         # In production, this could use another LLM call to extract specific recommendations
         base_recommendations = [
@@ -409,8 +467,8 @@ class AnalysisService:
                 "action_items": [
                     "Analyze mobile vs desktop performance",
                     "Test mobile-optimized creative variations",
-                    "Adjust bid modifiers for mobile traffic"
-                ]
+                    "Adjust bid modifiers for mobile traffic",
+                ],
             },
             {
                 "recommendation_id": f"rec_{campaign_id}_002",
@@ -421,9 +479,9 @@ class AnalysisService:
                 "action_items": [
                     "Develop new creative concepts",
                     "A/B test fresh visual elements",
-                    "Implement dynamic creative optimization"
-                ]
-            }
+                    "Implement dynamic creative optimization",
+                ],
+            },
         ]
-        
+
         return base_recommendations

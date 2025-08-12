@@ -1,1 +1,3 @@
-# Empty file to make this a Python package
+__all__ = [
+    # Intentionally empty to avoid heavy imports at package import time.
+]

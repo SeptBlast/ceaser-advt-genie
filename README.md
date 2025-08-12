@@ -1,53 +1,90 @@
-# AdGenius - AI-Powered Advertising Platform
+# CeaserAdvtGenius - AI-Powered Advertising Platform
 
-A professional-grade, multi-tenant SaaS platform that leverages modern polyglot microservices architecture to deliver AI-powered advertising creative generation and analytics.
+> **Professional-grade, multi-tenant SaaS platform leveraging polyglot microservices architecture to deliver AI-powered advertising creative generation and analytics.**
 
-## 🚀 Features
+## 🚀 Quick Start
 
-- **AI-Powered Content Generation**: Advanced creative generation using OpenAI GPT-4, Google Gemini, and other LLMs
-- **Multi-Tenant Architecture**: Secure data isolation with Firebase Firestore and tenant context management
-- **Real-Time Analytics**: Comprehensive performance tracking and optimization insights
-- **Polyglot Microservices**: Go API Gateway + Python AI Engine for optimal performance
-- **Modern UI**: React 18 + Material-UI with responsive design and dark/light themes
-- **Enterprise-Ready**: Production-ready with Docker containerization and cloud-native design
+```bash
+# Clone and setup
+git clone <repository-url>
+cd ceaser-ad-business
 
-## 🏗️ Architecture Overview
+# Start development environment
+make dev-up
 
-This project implements a **polyglot microservices architecture** that leverages the strengths of different technologies:
+# Access the application
+# Frontend: http://localhost:5173
+# API Gateway: http://localhost:8080
+# AI Engine: http://localhost:8081
+```
 
-- **Go API Gateway**: High-performance operational plane handling HTTP requests, database operations, and request orchestration
-- **Python AI Engine**: Advanced AI reasoning plane using LangChain for complex agentic workflows and creative generation
-- **React Frontend**: Modern, responsive web application with Material-UI components
-- **Firebase Services**: Cloud-native authentication and Firestore database
-- **gRPC Communication**: High-performance inter-service communication
+## 🏗️ Architecture
 
-### System Architecture
+- **Go API Gateway**: High-performance operational plane
+- **Python AI Engine**: Advanced AI reasoning with 6 video generation providers
+- **React Frontend**: Modern TypeScript UI with Material-UI
+- **Firebase**: Multi-tenant authentication and database
+- **Docker**: Containerized microservices architecture
 
-```mermaid
-graph TD
-    subgraph UI
-        SPA
-    end
+## 📚 Documentation
 
-    subgraph "Backend Services"
-        GoAPI
-        PythonAI
-    end
+For comprehensive developer documentation, setup guides, API references, and architectural details, see:
 
-    subgraph "Async Processing"
-        Queue
-        Workers
-    end
+**[📖 DEVELOPER_DOCUMENTATION.md](DEVELOPER_DOCUMENTATION.md)**
 
-    subgraph "Data Stores"
-        Firestore
-        Qdrant
-        Redis
-    end
+This includes:
 
-    subgraph "External Services"
-        GCP_AI
-    end
+- Complete development environment setup
+- Service architecture and communication
+- API documentation and testing guides
+- Database schema and multi-tenancy
+- Deployment and troubleshooting
+- Contributing guidelines
+
+## 🎬 Key Features
+
+- **Multi-Provider Video Generation**: Runway, Pika, Stability, Luma, Google Veo, OpenAI
+- **AI-Powered Content Generation**: Advanced creative generation using multiple AI providers
+- **Intelligent Prompt Enhancement**: LLM-powered prompt quantification and optimization
+- **Multi-Tenant Architecture**: Secure data isolation with Firebase Firestore
+- **Real-Time Analytics**: Comprehensive performance tracking and insights
+- **Enterprise-Ready**: Production-ready with Docker containerization
+
+## 🔧 Quick Commands
+
+```bash
+# Development
+make dev-up          # Start all services
+make dev-down        # Stop all services
+make dev-logs        # View logs
+
+# Testing
+make test            # Run all tests
+make test-api        # API integration tests
+make test-video      # Video generation tests
+
+# Production
+make prod-build      # Build production images
+make prod-deploy     # Deploy to production
+```
+
+## 📁 Project Structure
+
+```
+ceaser-ad-business/
+├── docs/                          # Documentation and architectural blueprints
+├── frontend/                      # React TypeScript frontend
+├── services/
+│   ├── go-api-gateway/           # Go-based API gateway service
+│   └── python-ai-engine/         # Python-based AI processing service
+├── firebase/                      # Firebase configuration
+├── DEVELOPER_DOCUMENTATION.md    # Complete developer guide
+└── Makefile                       # Build automation
+```
+
+---
+
+**For detailed documentation, visit [DEVELOPER_DOCUMENTATION.md](DEVELOPER_DOCUMENTATION.md)**
 
     User -->|HTTPS| SPA
     SPA -->|REST| GoAPI
@@ -61,7 +98,7 @@ graph TD
     Workers -->|Updates| Firestore
     PythonAI -->|Generative Calls| GCP_AI
 
-```
+````
 
 ```text
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
@@ -79,7 +116,7 @@ graph TD
                     │ (Auth/Firestore)│      │  (Cache/Queue)  │
                     │                 │      │                 │
                     └─────────────────┘      └─────────────────┘
-```
+````
 
 ## 📁 Project Structure
 

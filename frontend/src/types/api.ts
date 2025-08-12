@@ -84,13 +84,16 @@ export interface Creative {
     description?: string;
     callToAction?: string;
     imageUrl?: string;
-    videoUrl?: string;
+    videoUrl?: string; // provider video URL
     thumbnailUrl?: string;
+    s3VideoUrl?: string; // S3 storage URL for video
+    providerVideoUrl?: string; // Explicit provider URL if needed
   };
   aiMetadata?: {
     generatedBy: string;
     confidence: number;
     alternativeVersions?: Creative["content"][];
+    model?: string;
   };
   performance?: {
     impressions: number;
@@ -105,6 +108,15 @@ export interface Creative {
   updatedAt: string;
 }
 
+// AI Generation Request Type (extended for model selection)
+export interface GenerateCreativeAIRequest {
+  campaignId: string;
+  type: Creative["type"];
+  prompt: string;
+  model?: string;
+  targetAudience?: string;
+  style?: string;
+}
 export interface CreateCreativeRequest {
   campaignId: string;
   type: Creative["type"];

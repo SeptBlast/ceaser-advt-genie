@@ -20,21 +20,23 @@ class AgentService:
     Service for executing complex agentic workflows using LangChain agents and tools.
     This showcases Python's strength in the AI ecosystem with extensive tool integrations.
     """
-    
+
     def __init__(self):
         self.llm = self._init_llm()
         self.tools = self._init_tools()
         self.memory = ConversationBufferWindowMemory(
             memory_key="chat_history",
             return_messages=True,
-            k=10  # Remember last 10 interactions
+            k=10,  # Remember last 10 interactions
         )
-        
+
         # Agent prompt template
         self.agent_prompt = self._create_agent_prompt()
-        
-        logger.info("AgentService initialized with tools",
-                   tools=[tool.name for tool in self.tools])
+
+        logger.info(
+            "AgentService initialized with tools",
+            tools=[tool.name for tool in self.tools],
+        )
 
     def _init_llm(self) -> Optional[ChatOpenAI]:
         """Initialize LLM for agent workflows"""
@@ -44,7 +46,7 @@ class AgentService:
                 api_key=api_key,
                 model="gpt-4o",  # Use function calling capable model
                 temperature=0.1,  # Low temperature for more consistent tool usage
-                max_tokens=2000
+                max_tokens=2000,
             )
         # Note: Gemini could be used here too, but OpenAI has better function calling
         return None
@@ -52,63 +54,77 @@ class AgentService:
     def _init_tools(self) -> List[Tool]:
         """Initialize available tools for the agent"""
         tools = []
-        
+
         # Web search tool
         try:
             search_tool = DuckDuckGoSearchRun()
-            tools.append(Tool(
-                name="web_search",
-                description="Search the web for current information, news, trends, and market data. Use this for competitive intelligence, market research, and trend analysis.",
-                func=search_tool.run
-            ))
+            tools.append(
+                Tool(
+                    name="web_search",
+                    description="Search the web for current information, news, trends, and market data. Use this for competitive intelligence, market research, and trend analysis.",
+                    func=search_tool.run,
+                )
+            )
         except Exception as e:
             logger.warning("Failed to initialize web search tool", error=str(e))
 
         # Wikipedia tool for background research
         try:
             wikipedia = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
-            tools.append(Tool(
-                name="wikipedia_search",
-                description="Search Wikipedia for general information about companies, products, people, or concepts. Good for background research.",
-                func=wikipedia.run
-            ))
+            tools.append(
+                Tool(
+                    name="wikipedia_search",
+                    description="Search Wikipedia for general information about companies, products, people, or concepts. Good for background research.",
+                    func=wikipedia.run,
+                )
+            )
         except Exception as e:
             logger.warning("Failed to initialize Wikipedia tool", error=str(e))
 
         # Campaign data analysis tool
-        tools.append(Tool(
-            name="campaign_analyzer",
-            description="Analyze campaign performance data, metrics, and trends. Input should be a campaign ID or performance data.",
-            func=self._analyze_campaign_data
-        ))
+        tools.append(
+            Tool(
+                name="campaign_analyzer",
+                description="Analyze campaign performance data, metrics, and trends. Input should be a campaign ID or performance data.",
+                func=self._analyze_campaign_data,
+            )
+        )
 
         # Market research tool
-        tools.append(Tool(
-            name="market_researcher",
-            description="Research market trends, competitor analysis, and industry insights. Input should be industry or product category.",
-            func=self._research_market_trends
-        ))
+        tools.append(
+            Tool(
+                name="market_researcher",
+                description="Research market trends, competitor analysis, and industry insights. Input should be industry or product category.",
+                func=self._research_market_trends,
+            )
+        )
 
         # Creative optimization tool
-        tools.append(Tool(
-            name="creative_optimizer",
-            description="Analyze creative performance and provide optimization recommendations. Input should be creative IDs or performance data.",
-            func=self._optimize_creatives
-        ))
+        tools.append(
+            Tool(
+                name="creative_optimizer",
+                description="Analyze creative performance and provide optimization recommendations. Input should be creative IDs or performance data.",
+                func=self._optimize_creatives,
+            )
+        )
 
         # Audience insights tool
-        tools.append(Tool(
-            name="audience_insights",
-            description="Analyze audience behavior, segments, and targeting opportunities. Input should be audience data or campaign targeting info.",
-            func=self._analyze_audience_insights
-        ))
+        tools.append(
+            Tool(
+                name="audience_insights",
+                description="Analyze audience behavior, segments, and targeting opportunities. Input should be audience data or campaign targeting info.",
+                func=self._analyze_audience_insights,
+            )
+        )
 
         # Budget optimization tool
-        tools.append(Tool(
-            name="budget_optimizer",
-            description="Analyze budget allocation and provide optimization recommendations. Input should be current budget distribution and performance data.",
-            func=self._optimize_budget_allocation
-        ))
+        tools.append(
+            Tool(
+                name="budget_optimizer",
+                description="Analyze budget allocation and provide optimization recommendations. Input should be current budget distribution and performance data.",
+                func=self._optimize_budget_allocation,
+            )
+        )
 
         return tools
 
@@ -138,12 +154,14 @@ class AgentService:
         Current context: {context}
         """
 
-        return ChatPromptTemplate.from_messages([
-            ("system", system_prompt),
-            MessagesPlaceholder("chat_history"),
-            ("human", "{input}"),
-            MessagesPlaceholder("agent_scratchpad")
-        ])
+        return ChatPromptTemplate.from_messages(
+            [
+                ("system", system_prompt),
+                MessagesPlaceholder("chat_history"),
+                ("human", "{input}"),
+                MessagesPlaceholder("agent_scratchpad"),
+            ]
+        )
 
     async def execute_workflow(
         self,
@@ -151,24 +169,28 @@ class AgentService:
         user_query: str,
         context: Dict[str, Any],
         available_tools: List[str],
-        campaign_id: Optional[str] = None
+        campaign_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Execute an agentic workflow using LangChain agents and tools.
         This showcases the power of Python's mature AI ecosystem.
         """
         try:
-            logger.info("Starting agent workflow",
-                       workflow_type=workflow_type,
-                       user_query=user_query,
-                       campaign_id=campaign_id)
+            logger.info(
+                "Starting agent workflow",
+                workflow_type=workflow_type,
+                user_query=user_query,
+                campaign_id=campaign_id,
+            )
 
             if not self.llm:
                 raise ValueError("No LLM available for agent workflows")
 
             # Filter tools based on available_tools if specified
             if available_tools:
-                filtered_tools = [tool for tool in self.tools if tool.name in available_tools]
+                filtered_tools = [
+                    tool for tool in self.tools if tool.name in available_tools
+                ]
             else:
                 filtered_tools = self.tools
 
@@ -178,9 +200,7 @@ class AgentService:
 
             # Create agent with filtered tools
             agent = create_openai_functions_agent(
-                llm=self.llm,
-                tools=filtered_tools,
-                prompt=self.agent_prompt
+                llm=self.llm, tools=filtered_tools, prompt=self.agent_prompt
             )
 
             # Create executor
@@ -190,38 +210,47 @@ class AgentService:
                 memory=self.memory,
                 verbose=True,
                 max_iterations=5,
-                handle_parsing_errors=True
+                handle_parsing_errors=True,
             )
 
             # Prepare context for the agent
-            context_str = json.dumps(context, indent=2) if context else "No additional context provided"
+            context_str = (
+                json.dumps(context, indent=2)
+                if context
+                else "No additional context provided"
+            )
             if campaign_id:
                 context_str += f"\nCampaign ID: {campaign_id}"
 
             # Execute the workflow
             start_time = datetime.now()
-            
-            result = await executor.ainvoke({
-                "input": user_query,
-                "context": context_str
-            })
+
+            result = await executor.ainvoke(
+                {"input": user_query, "context": context_str}
+            )
 
             end_time = datetime.now()
             execution_time = (end_time - start_time).total_seconds()
 
             # Extract tools used from the result
             tools_used = []
-            if hasattr(result, 'intermediate_steps'):
+            if hasattr(result, "intermediate_steps"):
                 for step in result.intermediate_steps:
                     if len(step) >= 2:
                         action, output = step[0], step[1]
-                        tools_used.append({
-                            "tool_name": action.tool,
-                            "input": action.tool_input,
-                            "output": str(output)[:200] + "..." if len(str(output)) > 200 else str(output),
-                            "execution_time_seconds": 1.0,  # Approximate
-                            "success": True
-                        })
+                        tools_used.append(
+                            {
+                                "tool_name": action.tool,
+                                "input": action.tool_input,
+                                "output": (
+                                    str(output)[:200] + "..."
+                                    if len(str(output)) > 200
+                                    else str(output)
+                                ),
+                                "execution_time_seconds": 1.0,  # Approximate
+                                "success": True,
+                            }
+                        )
 
             response = {
                 "success": True,
@@ -232,22 +261,26 @@ class AgentService:
                     "workflow_id": f"workflow_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                     "steps_executed": len(tools_used),
                     "total_time_seconds": execution_time,
-                    "timestamp": datetime.utcnow().isoformat()
-                }
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
             }
 
-            logger.info("Agent workflow completed successfully",
-                       workflow_type=workflow_type,
-                       execution_time=execution_time,
-                       tools_used_count=len(tools_used))
+            logger.info(
+                "Agent workflow completed successfully",
+                workflow_type=workflow_type,
+                execution_time=execution_time,
+                tools_used_count=len(tools_used),
+            )
 
             return response
 
         except Exception as e:
-            logger.error("Agent workflow failed",
-                        error=str(e),
-                        workflow_type=workflow_type,
-                        user_query=user_query)
+            logger.error(
+                "Agent workflow failed",
+                error=str(e),
+                workflow_type=workflow_type,
+                user_query=user_query,
+            )
             return {
                 "success": False,
                 "message": f"Agent workflow failed: {str(e)}",
@@ -255,32 +288,32 @@ class AgentService:
                 "tools_used": [],
                 "metadata": {
                     "error": str(e),
-                    "timestamp": datetime.utcnow().isoformat()
-                }
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
             }
 
     def _analyze_campaign_data(self, input_data: str) -> str:
         """Tool function for campaign data analysis"""
         try:
             logger.info("Campaign analyzer tool called", input=input_data)
-            
+
             # Simulate campaign analysis (in production, this would query actual databases)
             analysis = {
                 "performance_summary": "Campaign showing strong performance with 15% above benchmark CTR",
                 "key_metrics": {
                     "ctr": "2.8% (15% above benchmark)",
                     "conversion_rate": "5.2% (stable)",
-                    "roas": "4.2x (excellent)"
+                    "roas": "4.2x (excellent)",
                 },
                 "recommendations": [
                     "Consider increasing budget by 20% for high-performing ad sets",
                     "Test new creative variations to maintain engagement",
-                    "Expand to similar audiences"
-                ]
+                    "Expand to similar audiences",
+                ],
             }
-            
+
             return json.dumps(analysis, indent=2)
-            
+
         except Exception as e:
             return f"Campaign analysis failed: {str(e)}"
 
@@ -288,7 +321,7 @@ class AgentService:
         """Tool function for market research"""
         try:
             logger.info("Market researcher tool called", input=input_data)
-            
+
             # Simulate market research (in production, this might call external APIs)
             trends = {
                 "market_overview": f"Current trends in {input_data} market",
@@ -297,17 +330,17 @@ class AgentService:
                 "opportunities": [
                     "Mobile-first strategies showing strong adoption",
                     "Video content engagement up 25%",
-                    "AI-powered personalization gaining traction"
+                    "AI-powered personalization gaining traction",
                 ],
                 "threats": [
                     "Increased competition",
                     "Rising acquisition costs",
-                    "Privacy regulation impacts"
-                ]
+                    "Privacy regulation impacts",
+                ],
             }
-            
+
             return json.dumps(trends, indent=2)
-            
+
         except Exception as e:
             return f"Market research failed: {str(e)}"
 
@@ -315,7 +348,7 @@ class AgentService:
         """Tool function for creative optimization"""
         try:
             logger.info("Creative optimizer tool called", input=input_data)
-            
+
             optimization = {
                 "current_performance": "Primary creative CTR declining by 8% over past week",
                 "fatigue_indicators": "Frequency above 3.5, engagement dropping",
@@ -323,17 +356,17 @@ class AgentService:
                     "Launch new creative variations immediately",
                     "Test different value propositions",
                     "Implement dynamic creative optimization",
-                    "Consider seasonal messaging updates"
+                    "Consider seasonal messaging updates",
                 ],
                 "priority_actions": [
                     "Create 3 new image variations",
                     "Test video formats",
-                    "Update call-to-action text"
-                ]
+                    "Update call-to-action text",
+                ],
             }
-            
+
             return json.dumps(optimization, indent=2)
-            
+
         except Exception as e:
             return f"Creative optimization failed: {str(e)}"
 
@@ -341,34 +374,34 @@ class AgentService:
         """Tool function for audience insights"""
         try:
             logger.info("Audience insights tool called", input=input_data)
-            
+
             insights = {
                 "top_segments": {
                     "tech_professionals_25_35": {
                         "performance": "Highest conversion rate at 7.2%",
                         "volume": "35% of total traffic",
-                        "optimization": "Increase budget allocation"
+                        "optimization": "Increase budget allocation",
                     },
                     "small_business_owners": {
                         "performance": "Strong engagement, lower conversion",
-                        "volume": "25% of total traffic", 
-                        "optimization": "Test different messaging"
-                    }
+                        "volume": "25% of total traffic",
+                        "optimization": "Test different messaging",
+                    },
                 },
                 "behavioral_patterns": [
                     "Mobile usage peaks 7-9 PM",
                     "Desktop conversions higher during business hours",
-                    "Weekend traffic shows different intent patterns"
+                    "Weekend traffic shows different intent patterns",
                 ],
                 "expansion_opportunities": [
                     "Lookalike audiences based on top converters",
                     "Interest-based targeting expansion",
-                    "Geographic expansion to similar markets"
-                ]
+                    "Geographic expansion to similar markets",
+                ],
             }
-            
+
             return json.dumps(insights, indent=2)
-            
+
         except Exception as e:
             return f"Audience analysis failed: {str(e)}"
 
@@ -376,27 +409,27 @@ class AgentService:
         """Tool function for budget optimization"""
         try:
             logger.info("Budget optimizer tool called", input=input_data)
-            
+
             optimization = {
                 "current_allocation": {
                     "facebook": "40% ($2,000)",
-                    "google_ads": "35% ($1,750)", 
-                    "instagram": "25% ($1,250)"
+                    "google_ads": "35% ($1,750)",
+                    "instagram": "25% ($1,250)",
                 },
                 "recommended_allocation": {
                     "facebook": "45% (+5% increase)",
                     "google_ads": "30% (-5% decrease)",
-                    "instagram": "25% (maintain)"
+                    "instagram": "25% (maintain)",
                 },
                 "rationale": [
                     "Facebook showing 20% better ROAS",
                     "Google Ads CPC increased 15% this month",
-                    "Instagram performance stable"
+                    "Instagram performance stable",
                 ],
-                "expected_impact": "12% improvement in overall ROAS"
+                "expected_impact": "12% improvement in overall ROAS",
             }
-            
+
             return json.dumps(optimization, indent=2)
-            
+
         except Exception as e:
             return f"Budget optimization failed: {str(e)}"
