@@ -17,18 +17,18 @@ Enhanced the Python AI Engine with comprehensive video generation capabilities, 
   - Google Veo
   - OpenAI Sora (shorts)
 
-### 2. S3 Video Storage System
+### 2. Firebase Video Storage System
 
-- **File**: `app/services/s3_storage.py`
-- **Storage Structure**: `s3://bucket/{tenant_name}/{timestamp}-{creative_id}-{iteration}.mp4`
+- **File**: `app/services/firebase_storage.py`
+- **Storage Structure**: `videos/{tenant_name}/{timestamp}-{creative_id}-{iteration}.mp4`
 - **Features**:
   - Automatic video download from provider URLs
   - Organized folder structure by tenant
   - File naming with timestamp, creative ID, and iteration
   - Metadata storage (tenant, creative_id, iteration, original_url, upload_time)
-  - Presigned URL generation for secure access
+  - Signed URL generation for secure access
   - Video deletion and tenant video listing
-  - Graceful fallback when S3 not configured
+  - Graceful fallback when Firebase not configured
 
 ### 3. Intelligent Prompt Quantification & Regeneration
 
@@ -45,7 +45,7 @@ Enhanced the Python AI Engine with comprehensive video generation capabilities, 
   - Video generation pathway in creative workflow
   - Model selection and parameter handling
   - Prompt regeneration integration
-  - S3 storage integration with tenant and creative context
+  - Firebase storage integration with tenant and creative context
 
 ### 5. gRPC Service Endpoints
 
@@ -53,19 +53,19 @@ Enhanced the Python AI Engine with comprehensive video generation capabilities, 
 - **New Methods**:
   - `GenerateVideo()` - Generate videos with selected models
   - `ListVideoModels()` - Get available video generation models
-- **Updated Parameters**: Now includes `tenant_name` and `creative_id` for proper S3 storage
+- **Updated Parameters**: Now includes `tenant_name` and `creative_id` for proper Firebase storage
 
 ### 6. Environment Configuration
 
 - **Files**: `.env.example`, `docker-compose.dev.yaml`, `docker-compose.prod.yaml`
 - **API Keys**: Configured for all 6 video providers
-- **S3 Configuration**: AWS credentials, bucket name, region settings
-- **Graceful Fallbacks**: Mock responses when API keys or S3 unavailable
+- **Firebase Configuration**: Service account credentials, bucket settings
+- **Graceful Fallbacks**: Mock responses when API keys or Firebase unavailable
 
 ### 7. Testing Infrastructure
 
-- **Files**: `test_video.py`, `smoke_video.py`, `test_s3_storage.py`, `scripts/run_test.sh`
-- **Coverage**: Model listing, video generation, S3 storage, error handling
+- **Files**: `test_video.py`, `smoke_video.py`, `test_firebase_storage.py`, `scripts/run_test.sh`
+- **Coverage**: Model listing, video generation, Firebase storage, error handling
 - **Execution**: Automated test runner with proper environment setup
 
 ## 🎯 User Experience Improvements
@@ -121,27 +121,25 @@ PIKA_API_KEY=your_key_here
 STABILITY_API_KEY=your_key_here
 # ... etc for all providers
 
-# S3 Configuration
-AWS_ACCESS_KEY_ID=your_access_key
-AWS_SECRET_ACCESS_KEY=your_secret_key
-AWS_REGION=us-east-1
-S3_BUCKET_NAME=ceaser-advt-genius-videos
-S3_VIDEO_PREFIX=videos
+# Firebase Configuration
+FIREBASE_SERVICE_ACCOUNT=./firebase/service-account.json
+FIREBASE_STORAGE_BUCKET=ceaser-advt-genius.appspot.com
+FIREBASE_VIDEO_PREFIX=videos
 ```
 
 ### Mock Fallbacks
 
-When API keys or S3 are unavailable, system generates realistic mock responses:
+When API keys or Firebase are unavailable, system generates realistic mock responses:
 
 ```bash
 https://runway-public.example/runway_3421774.mp4
 https://pika-public.example/pika_4091434.mp4
 ```
 
-**S3 Storage Structure**:
+**Firebase Storage Structure**:
 
 ```
-s3://ceaser-advt-genius-videos/
+firebase-storage://ceaser-advt-genius.appspot.com/
 ├── videos/
     ├── tenant-1/
     │   ├── 20250812_143052-creative-123-001.mp4
@@ -205,7 +203,7 @@ enhanced = await prompt_service.quantify(
     "Make a video of a dog playing in the park"
 )
 
-# Generate video with S3 storage
+# Generate video with Firebase storage
 result = await video_service.generate(
     prompt=enhanced['prompt'],
     model="runway_gen3",
@@ -215,12 +213,12 @@ result = await video_service.generate(
 )
 
 print(f"Generated: {result['results'][0]['content_url']}")
-print(f"Stored in S3: {result['results'][0]['s3_url']}")
+print(f"Stored in Firebase: {result['results'][0]['firebase_url']}")
 
 # List tenant videos
 tenant_videos = await video_service.list_tenant_videos("acme-corp")
 for video in tenant_videos:
-    print(f"Video: {video['key']}, Size: {video['size']} bytes")
+    print(f"Video: {video['name']}, Size: {video['size']} bytes")
 ```
 
 ## 🏆 Impact
@@ -232,8 +230,8 @@ This implementation transforms the AdGenius platform by:
 3. **Enhancing Prompt Quality**: AI-powered prompt optimization
 4. **Ensuring Scalability**: Async architecture supports high-volume generation
 5. **Maintaining Reliability**: Graceful fallbacks and comprehensive error handling
-6. **Organizing Storage**: Systematic S3 storage with tenant isolation and metadata
+6. **Organizing Storage**: Systematic Firebase storage with tenant isolation and metadata
 7. **Enabling Analytics**: Track video generation costs and usage by tenant
-8. **Supporting Compliance**: Secure storage with presigned URLs and access control
+8. **Supporting Compliance**: Secure storage with signed URLs and access control
 
 The Python AI Engine is now equipped with state-of-the-art video generation capabilities and enterprise-grade storage management, ready to power the next generation of AI-driven advertising campaigns.

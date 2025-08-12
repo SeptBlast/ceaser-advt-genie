@@ -27,5 +27,6 @@ requests==2.32.4
 duckduckgo-search==8.1.1
 wikipedia==1.4.0
 httpx==0.28.1
+# Firebase Storage for video storage
 google-cloud-storage==2.18.0
 firebase-admin==6.6.0

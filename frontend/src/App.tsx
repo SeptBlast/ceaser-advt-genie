@@ -6,6 +6,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import Layout from './components/CeaserLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import SuperAdminRoute from './components/SuperAdminRoute';
+import TenantAdminRoute from './components/TenantAdminRoute';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -20,6 +22,16 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import BillingPage from './pages/BillingPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
+import TeamManagementPage from './pages/TeamManagementPage';
+
+// Admin Pages
+import {
+  AdminDashboardPage,
+  TenantsManagementPage,
+  BillingManagementPage,
+  SupportTicketsPage,
+  SystemSettingsPage,
+} from './pages/admin';
 
 const App: React.FC = () => {
   return (
@@ -89,6 +101,68 @@ const App: React.FC = () => {
                 <Layout>
                   <ProfilePage />
                 </Layout>
+              </ProtectedRoute>
+            } />
+            
+            {/* Team Management - Tenant Admin Only */}
+            <Route path="/team" element={
+              <ProtectedRoute>
+                <TenantAdminRoute>
+                  <Layout>
+                    <TeamManagementPage />
+                  </Layout>
+                </TenantAdminRoute>
+              </ProtectedRoute>
+            } />
+            
+            {/* Admin routes - Super Admin Only */}
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <SuperAdminRoute>
+                  <Layout>
+                    <AdminDashboardPage />
+                  </Layout>
+                </SuperAdminRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/tenants" element={
+              <ProtectedRoute>
+                <SuperAdminRoute>
+                  <Layout>
+                    <TenantsManagementPage />
+                  </Layout>
+                </SuperAdminRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/billing" element={
+              <ProtectedRoute>
+                <SuperAdminRoute>
+                  <Layout>
+                    <BillingManagementPage />
+                  </Layout>
+                </SuperAdminRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/support" element={
+              <ProtectedRoute>
+                <SuperAdminRoute>
+                  <Layout>
+                    <SupportTicketsPage />
+                  </Layout>
+                </SuperAdminRoute>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/settings" element={
+              <ProtectedRoute>
+                <SuperAdminRoute>
+                  <Layout>
+                    <SystemSettingsPage />
+                  </Layout>
+                </SuperAdminRoute>
               </ProtectedRoute>
             } />
             

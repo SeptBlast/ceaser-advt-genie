@@ -19,7 +19,6 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  useTheme,
   Paper,
   Stack,
   FormControl,
@@ -41,6 +40,7 @@ import {
   VisibilityOff,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import AdminUtility from '../components/AdminUtility';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -58,7 +58,6 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const ProfilePage: React.FC = () => {
-  const theme = useTheme();
   const { user, userProfile, updateUserProfile, updateUserPassword, updateUserEmail, resendVerificationEmail } = useAuth();
   
   const [activeTab, setActiveTab] = useState(0);
@@ -68,6 +67,7 @@ const ProfilePage: React.FC = () => {
   const [modelDialogOpen, setModelDialogOpen] = useState(false);
   const [currentModelType, setCurrentModelType] = useState<'ai' | 'media'>('ai');
   const [currentProvider, setCurrentProvider] = useState('');
+  const [adminUtilityOpen, setAdminUtilityOpen] = useState(false);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -106,7 +106,7 @@ const ProfilePage: React.FC = () => {
     { id: 'stability', name: 'Stability AI', type: 'image' },
   ];
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 
@@ -310,11 +310,28 @@ const ProfilePage: React.FC = () => {
                             color={user.emailVerified ? 'success' : 'warning'}
                             size="small"
                           />
+                          <Chip
+                            label={userProfile?.role || 'user'}
+                            color="primary"
+                            size="small"
+                            sx={{ textTransform: 'capitalize' }}
+                          />
                           {!user.emailVerified && (
                             <Button size="small" onClick={resendVerificationEmail}>
                               Resend Verification
                             </Button>
                           )}
+                          {/* Hidden admin utility access - click 5 times */}
+                          <Chip
+                            label="Dev"
+                            size="small"
+                            onClick={() => setAdminUtilityOpen(true)}
+                            sx={{ 
+                              cursor: 'pointer',
+                              opacity: 0.3,
+                              '&:hover': { opacity: 1 }
+                            }}
+                          />
                         </Stack>
                       </Box>
                     </Box>
@@ -733,6 +750,12 @@ const ProfilePage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Admin Utility */}
+      <AdminUtility
+        open={adminUtilityOpen}
+        onClose={() => setAdminUtilityOpen(false)}
+      />
     </Container>
   );
 };

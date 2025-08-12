@@ -43,7 +43,7 @@ class VideoPrompt:
 class GenerationResult:
     success: bool
     content_url: Optional[str]
-    firebase_url: Optional[str]  # Changed from s3_url to firebase_url
+    firebase_url: Optional[str]
     job_id: Optional[str]
     model: str
     provider: str

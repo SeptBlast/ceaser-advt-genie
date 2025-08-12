@@ -18,6 +18,7 @@ import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firest
 import { auth, db } from '../config/firebase';
 import { cleanFirestoreData } from '../utils/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { UserRole, Permission } from '../types/team';
 
 interface UserProfile {
   uid: string;
@@ -25,6 +26,10 @@ interface UserProfile {
   displayName: string;
   photoURL?: string | null; // Allow null for Firestore compatibility
   emailVerified: boolean;
+  role: UserRole;
+  tenantId?: string; // null for super admin, required for tenant roles
+  permissions: Permission[];
+  isActive: boolean;
   createdAt: Date;
   lastLoginAt: Date;
   // AI Model Configurations
@@ -168,6 +173,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               displayName: user.displayName || '',
               photoURL: user.photoURL || null, // Use null instead of undefined for Firestore compatibility
               emailVerified: user.emailVerified,
+              role: 'user', // Default role
+              permissions: [], // No permissions for default user
+              isActive: true,
               createdAt: new Date(),
               lastLoginAt: new Date(),
               aiModels: {},

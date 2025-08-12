@@ -34,17 +34,22 @@ import {
   HealthAndSafety as HealthIcon,
   Logout,
   Person,
-  Pets as PetsIcon,
+  People,
   AutoAwesome as MagicIcon,
   Speed as SpeedIcon,
   EmojiObjects as CreativeIcon,
   FavoriteRounded as LoyalIcon,
+  Business,
+  Receipt,
+  Support,
+  AdminPanelSettings,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
 import { useThemeMode } from '../ThemeProvider';
 import { useAuth } from '../contexts/AuthContext';
 import { useHealth } from '../hooks/useApi';
+import ThemeAwareLogo from './ThemeAwareLogo';
 
 const drawerWidth = 280;
 
@@ -52,8 +57,16 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+interface NavigationItem {
+  text: string;
+  icon: React.ReactNode;
+  path: string;
+  description: string;
+  roles?: string[]; // Optional roles that can access this item
+}
+
 // Ceaser-themed navigation items with dog-inspired terminology
-const navigationItems = [
+const navigationItems: NavigationItem[] = [
   {
     text: 'Command Center',
     icon: <Dashboard />,
@@ -90,6 +103,47 @@ const navigationItems = [
     path: '/settings',
     description: 'Configure your territory',
   },
+  {
+    text: 'Pack Team',
+    icon: <People />,
+    path: '/team',
+    description: 'Manage your pack members',
+    roles: ['tenant_admin', 'superadmin'], // Only visible to tenant admins and super admins
+  },
+];
+
+// Admin navigation items for super admin users
+const adminNavigationItems: NavigationItem[] = [
+  {
+    text: 'Super Admin Dashboard',
+    icon: <AdminPanelSettings />,
+    path: '/admin',
+    description: 'Super admin control center',
+  },
+  {
+    text: 'Tenant Management',
+    icon: <Business />,
+    path: '/admin/tenants',
+    description: 'Manage all platform tenants',
+  },
+  {
+    text: 'Global Billing',
+    icon: <Receipt />,
+    path: '/admin/billing',
+    description: 'Platform-wide billing management',
+  },
+  {
+    text: 'Support Center',
+    icon: <Support />,
+    path: '/admin/support',
+    description: 'Global customer support management',
+  },
+  {
+    text: 'System Configuration',
+    icon: <Settings />,
+    path: '/admin/settings',
+    description: 'Platform system settings',
+  },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
@@ -97,7 +151,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { mode, toggleTheme } = useThemeMode();
-  const { user, logout } = useAuth();
+  const { user, logout, userProfile } = useAuth();
   const { healthStatus } = useHealth();
   
   const {
@@ -136,7 +190,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       borderRadius: '0 0 16px 16px',
       mb: 2,
     }}>
-      <PetsIcon sx={{ mr: 2, fontSize: 32 }} />
+      <ThemeAwareLogo width={45} height={45} />
+      {/* <PetsIcon sx={{ mr: 2, fontSize: 32 }} /> */}
       <Box>
         <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
           Ceaser
@@ -160,7 +215,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 
   // Enhanced navigation item with subtle animations
-  const NavigationItem = ({ item }: { item: typeof navigationItems[0] }) => {
+  const NavigationItem = ({ item }: { item: NavigationItem }) => {
     const isActive = location.pathname === item.path;
     
     return (
@@ -239,9 +294,32 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       {/* Navigation */}
       <List sx={{ flexGrow: 1, px: 1 }}>
-        {navigationItems.map((item) => (
-          <NavigationItem key={item.path} item={item} />
-        ))}
+        {navigationItems
+          .filter((item) => {
+            // If item has roles requirement, check if user has one of those roles
+            if (item.roles && item.roles.length > 0) {
+              return item.roles.includes(userProfile?.role || 'user');
+            }
+            // If no roles requirement, show to all authenticated users
+            return true;
+          })
+          .map((item) => (
+            <NavigationItem key={item.path} item={item} />
+          ))}
+        
+        {/* Admin Section - Only show for super admin users */}
+        {userProfile?.role === 'superadmin' && (
+          <>
+            <Divider sx={{ mx: 2, my: 2 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ px: 2 }}>
+                Super Admin
+              </Typography>
+            </Divider>
+            {adminNavigationItems.map((item) => (
+              <NavigationItem key={item.path} item={item} />
+            ))}
+          </>
+        )}
       </List>
 
       <Divider sx={{ mx: 2, mb: 2 }} />
@@ -317,7 +395,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </IconButton>
 
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            {navigationItems.find(item => item.path === location.pathname)?.text || 'Ceaser\'s Den'}
+            {navigationItems.find(item => item.path === location.pathname)?.text || 
+             adminNavigationItems.find(item => item.path === location.pathname)?.text || 
+             'Ceaser\'s Den'}
           </Typography>
 
           {/* Theme Toggle */}

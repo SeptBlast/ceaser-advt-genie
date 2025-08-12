@@ -375,7 +375,7 @@ class CreativeService:
                 {
                     "variation_id": item.get("job_id"),
                     "content_url": item.get("content_url"),
-                    "s3_url": item.get("s3_url"),
+                    "firebase_url": item.get("firebase_url"),
                     "content_type": "video",
                     "generation_parameters": quantified.__dict__,
                     "is_approved": False,
