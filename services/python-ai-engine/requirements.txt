@@ -1,32 +1,49 @@
-grpcio==1.74.0
-grpcio-tools==1.74.0
-protobuf==6.31.1
-langchain==0.3.27
-langchain-community==0.3.27
-langchain-openai==0.3.28
-langchain-google-genai==2.1.8
-langchain-experimental==0.3.4
-openai==1.98.0
-# google-generativeai>=0.8.5
-python-dotenv==1.1.1
-pydantic==2.11.7
-# Firebase Firestore dependencies (replacing MongoDB)
-firebase-admin==6.6.0
-google-cloud-firestore==2.21.0
-# motor==3.7.1  # MongoDB async driver - DEPRECATED
-# pymongo==4.13.2  # MongoDB driver - DEPRECATED
-redis==6.2.0
-celery==5.5.3
-structlog==25.4.0
-opentelemetry-api==1.36.0
-opentelemetry-sdk==1.36.0
-opentelemetry-instrumentation-grpc==0.57b0
-qdrant-client==1.15.1
-beautifulsoup4==4.13.4
-requests==2.32.4
-duckduckgo-search==8.1.1
-wikipedia==1.4.0
-httpx==0.28.1
-# Firebase Storage for video storage
-google-cloud-storage==2.18.0
-firebase-admin==6.6.0
+# Core gRPC and Protobuf
+grpcio>=1.74.0
+grpcio-tools>=1.74.0
+protobuf>=6.31.1
+
+# LangChain AI Framework
+langchain>=0.3.27
+langchain-community>=0.3.27
+langchain-openai>=0.3.30
+langchain-google-genai>=2.1.9
+langchain-experimental>=0.3.4
+
+# AI Model Providers
+openai>=1.99.9
+
+# Environment and Configuration
+python-dotenv>=1.1.1
+pydantic>=2.11.7
+structlog>=25.4.0
+
+# Firebase and Google Cloud
+firebase-admin>=7.1.0
+google-cloud-firestore>=2.21.0
+google-cloud-storage>=3.3.0
+
+# Async and Message Queue
+redis>=6.4.0
+celery>=5.5.3
+
+# Observability
+opentelemetry-api>=1.36.0
+opentelemetry-sdk>=1.36.0
+opentelemetry-instrumentation-grpc>=0.57b0
+
+# Vector Database
+qdrant-client>=1.15.1
+
+# Web Scraping and Utilities
+beautifulsoup4>=4.13.4
+requests>=2.32.4
+duckduckgo-search>=8.1.1
+wikipedia>=1.4.0
+httpx>=0.28.1
+
+# Testing (Development)
+pytest>=8.4.1
+pytest-asyncio>=1.1.0
+pytest-mock>=3.14.1
+psutil>=7.0.0
