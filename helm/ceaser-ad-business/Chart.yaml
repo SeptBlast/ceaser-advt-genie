@@ -1,0 +1,31 @@
+apiVersion: v2
+name: ceaser-ad-business
+description: A multi-tenant generative AI advertising platform
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+home: https://github.com/SeptBlast/ceaser-advt-genie
+sources:
+- https://github.com/SeptBlast/ceaser-advt-genie
+maintainers:
+- name: SeptBlast
+  email: deveshkumarsep12@outlook.com
+  url: https://github.com/SeptBlast
+icon: https://raw.githubusercontent.com/SeptBlast/ceaser-advt-genie/main/assets/logo.png
+keywords:
+- ai
+- advertising
+- saas
+- multi-tenant
+- generative-ai
+dependencies:
+- name: redis
+  version: 18.4.0
+  repository: https://charts.bitnami.com/bitnami
+  condition: redis.enabled
+- name: qdrant
+  version: 1.15.2
+  repository: https://qdrant.github.io/qdrant-helm
+  condition: qdrant.enabled
+annotations:
+  category: AI/ML

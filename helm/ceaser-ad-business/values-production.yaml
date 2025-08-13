@@ -1,0 +1,136 @@
+# Production values for ceaser-ad-business
+# Override the default values for production deployment
+
+# Global configuration
+global:
+  imageRegistry: "your-registry.com"
+  imagePullSecrets:
+  - name: registry-secret
+
+# Frontend production settings
+frontend:
+  replicaCount: 3
+  image:
+    repository: ceaser-ad-business/frontend
+    tag: "v1.0.0"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+
+# Go API Gateway production settings
+goApiGateway:
+  replicaCount: 3
+  image:
+    repository: ceaser-ad-business/go-api-gateway
+    tag: "v1.0.0"
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+
+# Python AI Engine production settings
+pythonAiEngine:
+  replicaCount: 2
+  image:
+    repository: ceaser-ad-business/python-ai-engine
+    tag: "v1.0.0"
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+
+# Ingress configuration for production
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+  hosts:
+  - host: adgenius.yourdomain.com
+    paths:
+    - path: /
+      pathType: Prefix
+      service:
+        name: frontend
+        port: 80
+    - path: /api
+      pathType: Prefix
+      service:
+        name: go-api-gateway
+        port: 8080
+  tls:
+  - secretName: adgenius-tls
+    hosts:
+    - adgenius.yourdomain.com
+
+# Enable autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Production database settings
+redis:
+  enabled: false # Use external Redis in production
+
+# External database configurations
+externalRedis:
+  url: "redis://your-redis-host:6379"
+
+# Qdrant with persistence
+qdrant:
+  persistence:
+    enabled: true
+    size: 100Gi
+    storageClass: "fast-ssd"
+
+# Production secrets (should be managed via external secret management)
+secrets:
+  firebase:
+    projectId: "your-production-firebase-project"
+    databaseId: "your-production-database"
+    storageBucket: "your-production-bucket.appspot.com"
+    serviceAccountKey: "" # Inject via external secret management
+
+  apiKeys:
+    openai: "" # Inject via external secret management
+    google: "" # Inject via external secret management
+    runway: "" # Inject via external secret management
+    pika: "" # Inject via external secret management
+    stability: "" # Inject via external secret management
+    luma: "" # Inject via external secret management
+
+# Enable monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    interval: 15s
+
+# Network security
+networkPolicy:
+  enabled: true
+
+# Production configuration
+config:
+  app:
+    environment: "production"
+    logLevel: "warn"
+    debug: false

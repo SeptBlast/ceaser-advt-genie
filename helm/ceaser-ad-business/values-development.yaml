@@ -1,0 +1,140 @@
+# Development values for ceaser-ad-business
+# Override the default values for development environment
+
+# Frontend development settings
+frontend:
+  replicaCount: 1
+  image:
+    repository: ceaser-ad-business/frontend
+    tag: "latest"
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Go API Gateway development settings
+goApiGateway:
+  replicaCount: 1
+  image:
+    repository: ceaser-ad-business/go-api-gateway
+    tag: "latest"
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  env:
+  - name: GIN_MODE
+    value: "debug"
+  - name: LOG_LEVEL
+    value: "debug"
+
+# Python AI Engine development settings
+pythonAiEngine:
+  replicaCount: 1
+  image:
+    repository: ceaser-ad-business/python-ai-engine
+    tag: "latest"
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  env:
+  - name: LOG_LEVEL
+    value: "DEBUG"
+
+# Local ingress for development
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  hosts:
+  - host: localhost
+    paths:
+    - path: /
+      pathType: Prefix
+      service:
+        name: frontend
+        port: 80
+    - path: /api
+      pathType: Prefix
+      service:
+        name: go-api-gateway
+        port: 8080
+  tls: []
+
+# Use internal databases for development
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: false
+  replica:
+    replicaCount: 0
+
+# Qdrant without persistence for development
+qdrant:
+  persistence:
+    enabled: false
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# Development secrets (not for production use)
+secrets:
+  firebase:
+    projectId: "dev-firebase-project"
+    databaseId: "dev-database"
+    storageBucket: "dev-bucket.appspot.com"
+    serviceAccountKey: "{}" # Mock service account for development
+
+  apiKeys:
+    openai: "sk-fake-key-for-development"
+    google: "fake-google-api-key"
+    runway: "fake-runway-key"
+    pika: "fake-pika-key"
+    stability: "fake-stability-key"
+    luma: "fake-luma-key"
+
+# Disable autoscaling for development
+autoscaling:
+  enabled: false
+
+# Development configuration
+config:
+  app:
+    environment: "development"
+    logLevel: "debug"
+    debug: true
+
+  features:
+    videoGeneration: true
+    aiAnalysis: true
+    multiTenant: false # Simplified for development
+
+# Disable production security features for easier development
+networkPolicy:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false
+
+monitoring:
+  enabled: false

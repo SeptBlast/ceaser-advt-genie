@@ -1,0 +1,75 @@
+1. Get the application URL by running these commands:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.frontend.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "ceaser-ad-business.fullname" . }}-frontend)
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.frontend.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "ceaser-ad-business.fullname" . }}-frontend'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "ceaser-ad-business.fullname" . }}-frontend --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.frontend.service.port }}
+{{- else if contains "ClusterIP" .Values.frontend.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "ceaser-ad-business.name" . }},app.kubernetes.io/instance={{ .Release.Name }},app.kubernetes.io/component=frontend" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+2. Check the status of all components:
+   kubectl get all -l app.kubernetes.io/instance={{ .Release.Name }} -n {{ .Release.Namespace }}
+
+3. View logs from different components:
+   # Frontend logs
+   kubectl logs -l app.kubernetes.io/component=frontend -n {{ .Release.Namespace }}
+   
+   # Go API Gateway logs
+   kubectl logs -l app.kubernetes.io/component=go-api-gateway -n {{ .Release.Namespace }}
+   
+   # Python AI Engine logs
+   kubectl logs -l app.kubernetes.io/component=python-ai-engine -n {{ .Release.Namespace }}
+
+4. Access services directly:
+   # Go API Gateway
+   kubectl port-forward svc/{{ include "ceaser-ad-business.fullname" . }}-go-api-gateway 8080:8080 -n {{ .Release.Namespace }}
+   
+   # Python AI Engine (gRPC)
+   kubectl port-forward svc/{{ include "ceaser-ad-business.fullname" . }}-python-ai-engine 50051:50051 -n {{ .Release.Namespace }}
+   
+   # Qdrant Vector Database
+   kubectl port-forward svc/{{ include "ceaser-ad-business.fullname" . }}-qdrant 6333:6333 -n {{ .Release.Namespace }}
+
+5. Environment-specific configurations:
+   {{- if .Values.redis.enabled }}
+   - Redis is enabled as an internal service
+   {{- else }}
+   - External Redis configuration is required
+   {{- end }}
+   - Qdrant vector database is enabled as an internal service
+
+6. Security considerations:
+   - Update all default passwords and API keys in values.yaml
+   - Configure proper TLS certificates for production use
+   - Review and adjust network policies for your security requirements
+   - Ensure proper RBAC configurations
+
+7. Monitoring:
+   {{- if .Values.monitoring.serviceMonitor.enabled }}
+   - ServiceMonitor is configured for Prometheus scraping
+   {{- else }}
+   - Enable monitoring.serviceMonitor.enabled to use Prometheus metrics
+   {{- end }}
+
+8. Scaling:
+   {{- if .Values.autoscaling.enabled }}
+   - Horizontal Pod Autoscaler is enabled
+   {{- else }}
+   - Enable autoscaling.enabled to use automatic scaling
+   {{- end }}
+
+For more information, visit: https://github.com/SeptBlast/ceaser-advt-genie

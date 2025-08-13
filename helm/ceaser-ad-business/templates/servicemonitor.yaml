@@ -1,0 +1,22 @@
+{{- if .Values.monitoring.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "ceaser-ad-business.fullname" . }}
+  {{- if .Values.monitoring.serviceMonitor.namespace }}
+  namespace: {{ .Values.monitoring.serviceMonitor.namespace }}
+  {{- end }}
+  labels:
+    {{- include "ceaser-ad-business.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "ceaser-ad-business.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http
+      path: {{ .Values.monitoring.serviceMonitor.path | default "/metrics" }}
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "30s" }}
+      {{- if .Values.monitoring.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+{{- end }}

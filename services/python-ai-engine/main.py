@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import sys
 from concurrent import futures
 from typing import Dict, Any
 
@@ -8,37 +9,48 @@ import grpc
 import structlog
 from dotenv import load_dotenv
 
-# Import generated protobuf classes (will be generated later)
-# from proto import ai_engine_pb2_grpc, ai_engine_pb2
-
-from app.services.creative_service import CreativeService
-from app.services.analysis_service import AnalysisService
-from app.services.agent_service import AgentService
-from app.services.insights_service import InsightsService
-
-# Load environment variables
+# Load environment variables first
 load_dotenv()
 
 # Configure structured logging
-structlog.configure(
-    processors=[
-        structlog.stdlib.filter_by_level,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.processors.UnicodeDecoder(),
-        structlog.processors.JSONRenderer(),
-    ],
-    context_class=dict,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    wrapper_class=structlog.stdlib.BoundLogger,
-    cache_logger_on_first_use=True,
-)
+try:
+    structlog.configure(
+        processors=[
+            structlog.stdlib.filter_by_level,
+            structlog.stdlib.add_logger_name,
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.PositionalArgumentsFormatter(),
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.processors.UnicodeDecoder(),
+            structlog.processors.JSONRenderer(),
+        ],
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
+    logger = structlog.get_logger()
+except Exception as e:
+    # Fallback to basic logging if structlog fails
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    logger.error(f"Failed to configure structlog, using basic logging: {e}")
 
-logger = structlog.get_logger()
+# Import services with error handling
+try:
+    from app.services.creative_service import CreativeService
+    from app.services.analysis_service import AnalysisService
+    from app.services.agent_service import AgentService
+    from app.services.insights_service import InsightsService
+    logger.info("Successfully imported all service modules")
+except ImportError as e:
+    logger.error(f"Failed to import service modules: {e}")
+    sys.exit(1)
+except Exception as e:
+    logger.error(f"Unexpected error importing services: {e}")
+    sys.exit(1)
 
 
 class AIEngineServicer:  # Will inherit from ai_engine_pb2_grpc.AIEngineServiceServicer
@@ -48,11 +60,38 @@ class AIEngineServicer:  # Will inherit from ai_engine_pb2_grpc.AIEngineServiceS
     """
 
     def __init__(self):
-        self.creative_service = CreativeService()
-        self.analysis_service = AnalysisService()
-        self.agent_service = AgentService()
-        self.insights_service = InsightsService()
-        logger.info("AIEngineServicer initialized with all services")
+        """Initialize AI Engine servicer with error handling."""
+        logger.info("Initializing AIEngineServicer...")
+        
+        try:
+            self.creative_service = CreativeService()
+            logger.info("✅ CreativeService initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize CreativeService: {e}")
+            raise
+        
+        try:
+            self.analysis_service = AnalysisService()
+            logger.info("✅ AnalysisService initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize AnalysisService: {e}")
+            raise
+        
+        try:
+            self.agent_service = AgentService()
+            logger.info("✅ AgentService initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize AgentService: {e}")
+            raise
+        
+        try:
+            self.insights_service = InsightsService()
+            logger.info("✅ InsightsService initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize InsightsService: {e}")
+            raise
+        
+        logger.info("🎉 AIEngineServicer initialized successfully with all services")
 
     async def GenerateCreative(self, request, context):
         """Generate creative content using AI models and LangChain"""
@@ -242,32 +281,113 @@ class AIEngineServicer:  # Will inherit from ai_engine_pb2_grpc.AIEngineServiceS
 
 
 async def serve():
-    """Start the gRPC server"""
-    server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
-
-    # Add the servicer to the server
-    # ai_engine_pb2_grpc.add_AIEngineServiceServicer_to_server(
-    #     AIEngineServicer(), server
-    # )
-
-    # Configure server address
-    listen_addr = f"[::]:{os.getenv('GRPC_PORT', '50051')}"
-    server.add_insecure_port(listen_addr)
-
-    logger.info("Starting AI Engine gRPC server", address=listen_addr)
-
-    await server.start()
-
+    """Start the gRPC server with comprehensive error handling"""
     try:
-        await server.wait_for_termination()
+        logger.info("Starting AI Engine gRPC server initialization...")
+        
+        # Check environment variables
+        port = os.getenv('GRPC_PORT', '50051')
+        max_workers = int(os.getenv('GRPC_MAX_WORKERS', '10'))
+        
+        logger.info(f"Server configuration - Port: {port}, Max Workers: {max_workers}")
+        
+        # Create server
+        server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=max_workers))
+        
+        # Initialize servicer
+        logger.info("Initializing AI Engine servicer...")
+        servicer = AIEngineServicer()
+        
+        # Add the servicer to the server (proto definitions commented out for now)
+        # ai_engine_pb2_grpc.add_AIEngineServiceServicer_to_server(servicer, server)
+        logger.info("AI Engine servicer added to server")
+        
+        # Configure server address
+        listen_addr = f"[::]:{port}"
+        actual_port = server.add_insecure_port(listen_addr)
+        
+        if actual_port == 0:
+            raise Exception(f"Failed to bind to port {port}")
+        
+        logger.info(f"✅ Successfully bound to address: {listen_addr} (port: {actual_port})")
+        
+        # Start server
+        logger.info("Starting gRPC server...")
+        await server.start()
+        logger.info("🚀 AI Engine gRPC server started successfully!")
+        logger.info(f"Server listening on {listen_addr}")
+        
+        # Wait for termination
+        try:
+            await server.wait_for_termination()
+        except KeyboardInterrupt:
+            logger.info("Received interrupt signal, shutting down...")
+        finally:
+            logger.info("Stopping AI Engine server...")
+            await server.stop(grace=5)
+            logger.info("✅ AI Engine server stopped gracefully")
+    
+    except Exception as e:
+        logger.error(f"❌ Failed to start AI Engine server: {e}")
+        logger.error(f"Error type: {type(e).__name__}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise
+
+
+def check_required_env_vars():
+    """Check if required environment variables are set."""
+    required_vars = {
+        'FIREBASE_PROJECT_ID': 'Firebase project ID',
+        'GOOGLE_APPLICATION_CREDENTIALS': 'Path to Firebase service account key'
+    }
+    
+    missing_vars = []
+    for var, description in required_vars.items():
+        if not os.getenv(var):
+            missing_vars.append(f"{var} ({description})")
+    
+    if missing_vars:
+        logger.error("❌ Missing required environment variables:")
+        for var in missing_vars:
+            logger.error(f"   - {var}")
+        return False
+    
+    logger.info("✅ All required environment variables are set")
+    return True
+
+
+def main():
+    """Main entry point with startup validation."""
+    logger.info("🚀 Python AI Engine Starting...")
+    logger.info("=" * 60)
+    
+    # Check environment variables
+    if not check_required_env_vars():
+        logger.error("❌ Environment validation failed")
+        sys.exit(1)
+    
+    # Check file permissions
+    service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    if service_account_path and not os.path.exists(service_account_path):
+        logger.error(f"❌ Service account file not found: {service_account_path}")
+        sys.exit(1)
+    
+    logger.info("✅ Environment validation passed")
+    logger.info("=" * 60)
+    
+    # Set up basic logging for asyncio
+    logging.basicConfig(level=logging.INFO)
+    
+    try:
+        # Run the server
+        asyncio.run(serve())
     except KeyboardInterrupt:
-        logger.info("Shutting down AI Engine server")
-        await server.stop(5)
+        logger.info("Received interrupt, exiting...")
+    except Exception as e:
+        logger.error(f"❌ Fatal error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    # Set up logging
-    logging.basicConfig(level=logging.INFO)
-
-    # Run the server
-    asyncio.run(serve())
+    main()

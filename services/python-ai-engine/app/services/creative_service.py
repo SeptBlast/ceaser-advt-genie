@@ -31,11 +31,10 @@ class CreativeService:
             "text": self._get_text_prompt(),
             "carousel": self._get_carousel_prompt(),
         }
-
-    logger.info("CreativeService initialized with LLM models")
-    logger.info(
-        "Video models available", models=self.video_service.get_supported_models()
-    )
+        logger.info("CreativeService initialized with LLM models")
+        logger.info(
+            "Video models available", models=self.video_service.get_supported_models()
+        )
 
     def _init_openai_llm(self) -> Optional[ChatOpenAI]:
         """Initialize OpenAI LLM if API key is available"""

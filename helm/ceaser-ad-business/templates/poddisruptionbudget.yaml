@@ -1,0 +1,43 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "ceaser-ad-business.fullname" . }}-frontend
+  labels:
+    {{- include "ceaser-ad-business.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "ceaser-ad-business.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "ceaser-ad-business.fullname" . }}-go-api-gateway
+  labels:
+    {{- include "ceaser-ad-business.labels" . | nindent 4 }}
+    app.kubernetes.io/component: go-api-gateway
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "ceaser-ad-business.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: go-api-gateway
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "ceaser-ad-business.fullname" . }}-python-ai-engine
+  labels:
+    {{- include "ceaser-ad-business.labels" . | nindent 4 }}
+    app.kubernetes.io/component: python-ai-engine
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "ceaser-ad-business.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: python-ai-engine
+{{- end }}

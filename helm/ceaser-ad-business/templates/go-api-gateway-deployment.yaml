@@ -1,0 +1,134 @@
+{{- if .Values.goApiGateway.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ceaser-ad-business.fullname" . }}-go-api-gateway
+  labels:
+    {{- include "ceaser-ad-business.labels" . | nindent 4 }}
+    app.kubernetes.io/component: go-api-gateway
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.goApiGateway.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ceaser-ad-business.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: go-api-gateway
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+      labels:
+        {{- include "ceaser-ad-business.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: go-api-gateway
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ceaser-ad-business.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: go-api-gateway
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "ceaser-ad-business.image" (dict "global" .Values.global "registry" "" "repository" .Values.goApiGateway.image.repository "tag" .Values.goApiGateway.image.tag) }}
+          imagePullPolicy: {{ .Values.goApiGateway.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.goApiGateway.service.targetPort }}
+              protocol: TCP
+          env:
+            {{- toYaml .Values.goApiGateway.env | nindent 12 }}
+            - name: FIREBASE_PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ceaser-ad-business.fullname" . }}-secrets
+                  key: firebase-project-id
+            - name: FIREBASE_DATABASE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ceaser-ad-business.fullname" . }}-secrets
+                  key: firebase-database-id
+            - name: FIREBASE_STORAGE_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ceaser-ad-business.fullname" . }}-secrets
+                  key: firebase-storage-bucket
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/app/firebase/service-account.json"
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ceaser-ad-business.fullname" . }}-secrets
+                  key: redis-url
+            - name: QDRANT_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ceaser-ad-business.fullname" . }}-config
+                  key: qdrant-host
+            - name: QDRANT_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ceaser-ad-business.fullname" . }}-config
+                  key: qdrant-port
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.healthCheck.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthCheck.periodSeconds }}
+            timeoutSeconds: {{ .Values.healthCheck.timeoutSeconds }}
+            failureThreshold: {{ .Values.healthCheck.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.goApiGateway.resources | nindent 12 }}
+          volumeMounts:
+            - name: firebase-service-account
+              mountPath: /app/firebase
+              readOnly: true
+      volumes:
+        - name: firebase-service-account
+          secret:
+            secretName: {{ include "ceaser-ad-business.fullname" . }}-secrets
+            items:
+              - key: firebase-service-account-key
+                path: service-account.json
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ceaser-ad-business.fullname" . }}-go-api-gateway
+  labels:
+    {{- include "ceaser-ad-business.labels" . | nindent 4 }}
+    app.kubernetes.io/component: go-api-gateway
+spec:
+  type: {{ .Values.goApiGateway.service.type }}
+  ports:
+    - port: {{ .Values.goApiGateway.service.port }}
+      targetPort: {{ .Values.goApiGateway.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "ceaser-ad-business.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: go-api-gateway
+{{- end }}
